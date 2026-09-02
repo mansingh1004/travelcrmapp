@@ -1,0 +1,62 @@
+// GENERATED from the HTML prototype's SVG sprite. 51 symbols, all
+// 24x24 with 1.7px strokes, currentColor-driven so they inherit tint.
+//
+// Do not hand-edit: re-extract from the prototype if the icon set changes.
+library;
+
+/// Raw SVG bodies, keyed by name. Wrapped into a full document by [AppIcon].
+abstract final class AppIconData {
+  static const Map<String, String> paths = <String, String>{
+    'home': '<path d="M3 10.6 12 3.5l9 7.1V20a1 1 0 0 1-1 1h-4.5v-6h-7v6H4a1 1 0 0 1-1-1z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path>',
+    'users': '<g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.4"></circle><path d="M3 20c0-3.3 2.7-5.4 6-5.4s6 2.1 6 5.4"></path><path d="M16 5.2a3.2 3.2 0 0 1 0 6.1M17.5 14.9c2 .7 3.5 2.5 3.5 5.1"></path></g>',
+    'calendar': '<g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></g>',
+    'package': '<g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8.3v7.4a2 2 0 0 1-1 1.7l-7 3.9a2 2 0 0 1-2 0l-7-3.9a2 2 0 0 1-1-1.7V8.3a2 2 0 0 1 1-1.7l7-3.9a2 2 0 0 1 2 0l7 3.9a2 2 0 0 1 1 1.7z"></path><path d="M3.3 7.4 12 12l8.7-4.6M12 12v9.5"></path></g>',
+    'chat': '<path d="M21 12.5c0 4.1-4 7.4-9 7.4a10 10 0 0 1-2.6-.3L4 21.5l1.2-3.6A7 7 0 0 1 3 12.5c0-4.1 4-7.4 9-7.4s9 3.3 9 7.4z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path>',
+    'menu': '<path d="M3.5 7h17M3.5 12h17M3.5 17h11" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path>',
+    'bell': '<g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 15V10a6 6 0 0 0-12 0v5l-1.6 2.6h15.2z"></path><path d="M9.8 20.4a2.4 2.4 0 0 0 4.4 0"></path></g>',
+    'user': '<g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8.2" r="3.7"></circle><path d="M4.8 20.5c0-3.7 3.2-6 7.2-6s7.2 2.3 7.2 6"></path></g>',
+    'search': '<g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="10.7" cy="10.7" r="6.7"></circle><path d="M15.6 15.6 21 21"></path></g>',
+    'filter': '<g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4 7h16M7 12h10M10 17h4"></path></g>',
+    'sort': '<g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4v16m0 0-3-3.2m3 3.2 3-3.2M17 20V4m0 0-3 3.2M17 4l3 3.2"></path></g>',
+    'plus': '<path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"></path>',
+    'phone': '<path d="M6.6 3.5h3l1.5 4-2.2 1.6a10.6 10.6 0 0 0 5.5 5.5L16 12.4l4 1.5v3a2.1 2.1 0 0 1-2.3 2.1C10.6 18.4 5 12.8 4.5 5.8A2.1 2.1 0 0 1 6.6 3.5z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path>',
+    'wa': '<g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 11.8a8.5 8.5 0 0 1-12.3 7.5L4 20.5l1.3-4.1A8.5 8.5 0 1 1 20.5 11.8z"></path><path d="M9.2 9.2c0 3 2.4 5.4 5.4 5.4l.9-1.6-1.9-.7-.7.9a4 4 0 0 1-2-2l.9-.7-.7-1.9z"></path></g>',
+    'chevR': '<path d="M9.5 5.5 16 12l-6.5 6.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>',
+    'chevD': '<path d="M5.5 9.5 12 16l6.5-6.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>',
+    'back': '<path d="M19 12H5m0 0 6.3-6.3M5 12l6.3 6.3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>',
+    'check': '<path d="M4.5 12.5 9.5 17.5 19.5 6.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>',
+    'checkC': '<g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.6"></circle><path d="M8.2 12.2l2.8 2.8 5-5.4"></path></g>',
+    'alert': '<g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.8 21 19.5H3z"></path><path d="M12 9.5v4.2M12 16.6h.01"></path></g>',
+    'x': '<path d="M6.5 6.5l11 11m0-11-11 11" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path>',
+    'clock': '<g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.6"></circle><path d="M12 7.4V12l3.4 2"></path></g>',
+    'pin': '<g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21.5s7-6.4 7-11.6A7 7 0 0 0 5 9.9c0 5.2 7 11.6 7 11.6z"></path><circle cx="12" cy="9.8" r="2.6"></circle></g>',
+    'bed': '<g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 19v-4.5h18V19M3 14.5V5m18 9.5v-1.6a3 3 0 0 0-3-3H11v4.6"></path><circle cx="7" cy="10.6" r="1.9"></circle></g>',
+    'car': '<g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16.5v-3.2L6 8h12l2 5.3v3.2M4 13.3h16"></path><circle cx="7.5" cy="17.4" r="1.6"></circle><circle cx="16.5" cy="17.4" r="1.6"></circle></g>',
+    'camera': '<g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8.5h3.2l1.4-2.2h6.8l1.4 2.2h3.2v10H3.5z"></path><circle cx="12" cy="13.2" r="3.1"></circle></g>',
+    'plane': '<path d="M3 12.4 21 4l-4.1 16.4-3.6-6.1-6.1-1.4z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path>',
+    'wallet': '<g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="3"></rect><path d="M3 10.5h18"></path><circle cx="16.6" cy="14.8" r="1.1" fill="currentColor" stroke="none"></circle></g>',
+    'file': '<g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h7.5L19 8.5V21H6z"></path><path d="M13.2 3v5.6H19M9 13h6M9 16.6h4.2"></path></g>',
+    'chart': '<g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V4M4 20h16"></path><path d="M8 20v-6M13 20V8.5M18 20v-9"></path></g>',
+    'cog': '<g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"></circle><path d="M12 3v2.6M12 18.4V21M4.2 7.5l2.3 1.3M17.5 15.2l2.3 1.3M4.2 16.5l2.3-1.3M17.5 8.8l2.3-1.3"></path></g>',
+    'help': '<g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.6"></circle><path d="M9.6 9.4a2.5 2.5 0 1 1 3.4 2.3c-.6.3-1 .8-1 1.5v.4M12 16.8h.01"></path></g>',
+    'logout': '<g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4H6a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h8"></path><path d="M17 8.5 20.5 12 17 15.5M10.5 12h10"></path></g>',
+    'edit': '<g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L20 8l-4-4L4 16z"></path><path d="M14.5 5.5 18.5 9.5"></path></g>',
+    'download': '<g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5v11m0 0-4-4m4 4 4-4M4.5 19.5h15"></path></g>',
+    'send': '<path d="M3.5 12 20.5 4l-3.9 16-4-5.6-4-1.1z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path>',
+    'trash': '<g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 7h15M9 7V4.5h6V7M6.5 7l1 13h9l1-13M10.5 10.5v6M13.5 10.5v6"></path></g>',
+    'drag': '<g fill="currentColor"><circle cx="9" cy="6" r="1.4"></circle><circle cx="15" cy="6" r="1.4"></circle><circle cx="9" cy="12" r="1.4"></circle><circle cx="15" cy="12" r="1.4"></circle><circle cx="9" cy="18" r="1.4"></circle><circle cx="15" cy="18" r="1.4"></circle></g>',
+    'dots': '<g fill="currentColor"><circle cx="12" cy="5.5" r="1.6"></circle><circle cx="12" cy="12" r="1.6"></circle><circle cx="12" cy="18.5" r="1.6"></circle></g>',
+    'star': '<path d="M12 3.5l2.7 5.6 6.1.8-4.5 4.3 1.1 6.1-5.4-3-5.4 3 1.1-6.1L3.2 9.9l6.1-.8z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path>',
+    'flame': '<path d="M12 3c3.6 4.6 6 6.4 6 10a6 6 0 0 1-12 0c0-1.9.9-3.1 2.2-4.3.4 1.2 1.2 2 2.3 2C11.5 8 11 5.6 12 3z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path>',
+    'receipt': '<g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18l-3-1.6-3 1.6-3-1.6L6 21z"></path><path d="M9.2 8h5.6M9.2 12h5.6"></path></g>',
+    'shield': '<path d="M12 3.2 19.5 6v6.2c0 4.8-3.6 7.6-7.5 8.8-3.9-1.2-7.5-4-7.5-8.8V6z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path>',
+    'globe': '<g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.6"></circle><path d="M3.4 12h17.2M12 3.4c2.4 2.4 3.6 5.3 3.6 8.6S14.4 18.2 12 20.6c-2.4-2.4-3.6-5.3-3.6-8.6S9.6 5.8 12 3.4z"></path></g>',
+    'grid': '<g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><rect x="3.5" y="3.5" width="7" height="7" rx="2"></rect><rect x="13.5" y="3.5" width="7" height="7" rx="2"></rect><rect x="3.5" y="13.5" width="7" height="7" rx="2"></rect><rect x="13.5" y="13.5" width="7" height="7" rx="2"></rect></g>',
+    'building': '<g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4.5h9V21M14 10h5v11M8 8h3M8 12h3M8 16h3M17 14h.01M17 17.5h.01"></path></g>',
+    'refresh': '<g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-3.1-6.3"></path><path d="M20.5 4.5V10H15"></path></g>',
+    'clip': '<path d="M15.5 8 9 14.5a2.6 2.6 0 0 0 3.7 3.7l6.8-6.8a4.6 4.6 0 0 0-6.5-6.5L6.2 11.7a6.6 6.6 0 0 0 9.3 9.3" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path>',
+    'trend': '<g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16.5 9.5 11l3.5 3.4L20 7.5"></path><path d="M15.2 7.5H20V12"></path></g>',
+    'target': '<g fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="8.4"></circle><circle cx="12" cy="12" r="4.6"></circle><circle cx="12" cy="12" r="1.1" fill="currentColor"></circle></g>',
+    'inbox': '<g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 13.5 6 5h12l2.5 8.5V19h-17z"></path><path d="M3.5 13.5H9a3 3 0 0 0 6 0h5.5"></path></g>',
+  };
+}

@@ -1,0 +1,1 @@
+{"success":true,"message":"Customer stats fetched","data":{"total":12,"active":11,"inactive":0,"blocked":1,"vip":0,"corporate":1,"regular":1,"totalRevenue":626366.00,"totalBookings":15,"repeatCustomers":1},"statusCode":200,"timestamp":"2026-09-01T13:01:30.0529376"}

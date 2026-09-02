@@ -1,0 +1,1 @@
+{"success":true,"message":"Operations summary fetched successfully","data":{"from":"2026-09-01","to":"2026-09-15","totalBookings":1,"ready":0,"actionNeeded":1,"urgent":0,"balancePending":60000.00},"statusCode":200,"timestamp":"2026-09-01T13:01:32.7738075"}
