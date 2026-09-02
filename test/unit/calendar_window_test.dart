@@ -1,7 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:crmapp/core/di.dart';
-import 'package:crmapp/data/services/calendar_api.dart';
+import 'package:crmapp/features/calendar/api/calendar_api.dart';
 import 'package:crmapp/features/calendar/providers/calendar_controller.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

@@ -9,7 +9,7 @@ import '../../../core/di.dart';
 import '../../../core/errors/failure.dart';
 import '../../../core/icons/app_icon.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../data/services/search_api.dart';
+import '../api/search_api.dart';
 import '../../../router/routes.dart';
 import '../../../widgets/app_card.dart';
 import '../../../widgets/state_views.dart';

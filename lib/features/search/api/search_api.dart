@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 
-import '../dto/envelopes.dart';
-import '../remote/failure_mapper.dart';
+import '../../../data/dto/envelopes.dart';
+import '../../../data/remote/failure_mapper.dart';
 
 /// One hit from `GET /api/search` — the global Cmd-K style record search.
 class SearchHit {

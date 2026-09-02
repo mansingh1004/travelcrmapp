@@ -40,10 +40,15 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   @override
   void initState() {
     super.initState();
-    // Opening a thread clears its unread badge.
+    // Opening a thread clears its unread badge. The callback runs a frame later
+    // and then awaits the network, so the screen can be gone by either point --
+    // back out of a thread quickly and touching `ref` would look up an ancestor
+    // through a deactivated element. Re-check `mounted` on both sides.
     WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
       try {
         await ref.read(communicationApiProvider).markRead(widget.conversationId);
+        if (!mounted) return;
         ref.invalidate(conversationsProvider);
       } on Failure {
         // Not being able to clear the badge must not block reading.
@@ -78,6 +83,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       } else {
         await api.sendWhatsApp(conversationId: widget.conversationId, text: text);
       }
+      // The send can outlive the screen: `_composer` is disposed in dispose()
+      // and `ref` would resolve through a dead element, so bail like the catch
+      // and finally below already do. The message is sent either way.
+      if (!mounted) return;
       _composer.clear();
       ref
         ..invalidate(chatMessagesProvider(widget.conversationId))

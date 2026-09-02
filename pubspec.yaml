@@ -45,6 +45,10 @@ dependencies:
   url_launcher: ^6.3.2
   equatable: ^2.1.0
   flutter_svg: ^2.3.0
+  # Hotel photos. Used with maxWidth/imageQuality so a phone's 6MB shot goes
+  # up as ~300KB: the server charges every uploaded byte to the tenant's
+  # storage quota and never deletes a replaced image.
+  image_picker: ^1.2.0
 
 dev_dependencies:
   flutter_test:

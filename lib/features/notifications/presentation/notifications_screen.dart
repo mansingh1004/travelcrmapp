@@ -7,7 +7,7 @@ import '../../../core/errors/failure.dart';
 import '../../../core/formatters/app_date.dart';
 import '../../../core/icons/app_icon.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../data/services/notification_api.dart';
+import '../api/notification_api.dart';
 import '../../../router/routes.dart';
 import '../../../widgets/app_card.dart';
 import '../../../widgets/app_toast.dart';

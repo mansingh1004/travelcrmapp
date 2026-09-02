@@ -47,6 +47,11 @@
 			</array>
 		</dict>
 	</dict>
+	<!-- image_picker: iOS refuses the picker outright without these strings. -->
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Choose a photo for a hotel in your masters.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Take a photo of a hotel for your masters.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>

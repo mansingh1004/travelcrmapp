@@ -1,9 +1,9 @@
 import 'package:dio/dio.dart';
 
-import '../../core/errors/failure.dart';
-import '../../core/formatters/app_date.dart';
-import '../../domain/entities/calendar.dart';
-import '../remote/failure_mapper.dart';
+import '../../../core/errors/failure.dart';
+import '../../../core/formatters/app_date.dart';
+import '../../../domain/entities/calendar.dart';
+import '../../../data/remote/failure_mapper.dart';
 
 /// `CalendarController` — `/api/calendar`.
 ///

@@ -1,9 +1,9 @@
 import 'package:dio/dio.dart';
 
-import '../../core/formatters/app_date.dart';
-import '../../domain/entities/payment.dart';
-import '../dto/envelopes.dart';
-import '../remote/failure_mapper.dart';
+import '../../../core/formatters/app_date.dart';
+import '../../../domain/entities/payment.dart';
+import '../../../data/dto/envelopes.dart';
+import '../../../data/remote/failure_mapper.dart';
 
 /// `BookingPaymentController` — `/api/bookings/{id}/payments`.
 ///

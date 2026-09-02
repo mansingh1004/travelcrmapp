@@ -1,8 +1,8 @@
 import 'package:dio/dio.dart';
 
-import '../../domain/entities/analytics.dart';
-import '../dto/envelopes.dart';
-import '../remote/failure_mapper.dart';
+import '../../../domain/entities/analytics.dart';
+import '../../../data/dto/envelopes.dart';
+import '../../../data/remote/failure_mapper.dart';
 
 /// `DashboardAnalyticsController` — `GET /api/dashboard/analytics`.
 ///

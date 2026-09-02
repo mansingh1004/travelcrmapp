@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/constants/status_colors.dart';
@@ -8,6 +9,7 @@ import '../../../../core/formatters/phone.dart';
 import '../../../../core/icons/app_icon.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../domain/entities/lead.dart';
+import '../../../../router/routes.dart';
 import '../../../../widgets/app_avatar.dart';
 import '../../../../widgets/app_card.dart';
 import '../../../../widgets/app_toast.dart';
@@ -141,6 +143,12 @@ class LeadCard extends StatelessWidget {
                         color: _isOverdue(followUp) ? AppColors.danger : null,
                       ),
               ),
+              _ActionButton(
+                icon: Ic.file,
+                label: 'New quotation for ${lead.customerName}',
+                onTap: () => context.push(Routes.quotationCreate),
+              ),
+              const SizedBox(width: AppSpacing.x4),
               _ActionButton(
                 icon: Ic.phone,
                 label: 'Call ${lead.customerName}',

@@ -145,4 +145,147 @@ class QuotationApi {
       throw FailureMapper.from(e);
     }
   }
+
+  // ── Starting a quotation from a lead ───────────────────────────────────
+  //
+  // The desktop console's `/createquotation?leadId=…` opens a builder with the
+  // lead's people, dates and destination already in it. On the server that
+  // pre-fill is not the client's work at all: `linkLeadAndSnapshot` copies the
+  // customer, pax, travel date, destination and the lead's chosen services onto
+  // whatever quotation is created for that lead, and applying a template fills
+  // the sections and the pricing on top.
+
+  /// `POST /api/quotation-templates/match` — the package templates that fit
+  /// this lead, ranked. `leadId` is the only required field.
+  Future<List<TemplateMatchDto>> matchTemplates(String leadId, {int limit = 10}) async {
+    try {
+      final response = await _dio.post<dynamic>(
+        '/api/quotation-templates/match',
+        data: <String, dynamic>{'leadId': leadId, 'limit': limit},
+      );
+      final envelope = ApiEnvelope.from<List<TemplateMatchDto>>(
+        response.data,
+        (data) => (data as List? ?? const [])
+            .cast<Map<String, dynamic>>()
+            .map(TemplateMatchDto.fromJson)
+            .toList(growable: false),
+      );
+      return envelope.data ?? const [];
+    } on DioException catch (e) {
+      throw FailureMapper.from(e);
+    }
+  }
+
+  /// `POST /api/quotation-templates/{publicId}/apply` — creates a **filled**
+  /// draft for the lead and returns it.
+  ///
+  /// The controller's own note: *"Returns the freshly created DRAFT quotation;
+  /// the client navigates straight into its builder."* Verified live: the draft
+  /// comes back with the lead's customer block, the template's hotel and
+  /// sightseeing rows, inclusions, exclusions and a computed grand total.
+  Future<QuotationDto> applyTemplate(
+    String templatePublicId, {
+    required String leadId,
+    String? title,
+  }) async {
+    try {
+      final response = await _dio.post<dynamic>(
+        '/api/quotation-templates/$templatePublicId/apply',
+        data: <String, dynamic>{
+          'leadId': leadId,
+          if (title != null && title.trim().isNotEmpty) 'title': title.trim(),
+        },
+      );
+      final envelope = ApiEnvelope.from<QuotationDto>(
+        response.data,
+        (data) => QuotationDto.fromJson(data! as Map<String, dynamic>),
+      );
+      return envelope.requireData();
+    } on DioException catch (e) {
+      throw FailureMapper.from(e);
+    }
+  }
+
+  /// `POST /api/quotations` with nothing but the lead — an empty draft that
+  /// still carries the lead's snapshot.
+  ///
+  /// A zero-value quotation is accepted: `assertQuotationHasValue` is gated on
+  /// `app.quotation.require-positive-total`, which is off, precisely so a quote
+  /// can be parked while rates are still being collected.
+  Future<QuotationDto> createForLead({
+    required String leadId,
+    String? title,
+    int? destinationId,
+  }) async {
+    try {
+      final response = await _dio.post<dynamic>(
+        '/api/quotations',
+        data: <String, dynamic>{
+          'leadId': leadId,
+          if (title != null && title.trim().isNotEmpty) 'title': title.trim(),
+          'destinationId': ?destinationId,
+        },
+      );
+      final envelope = ApiEnvelope.from<QuotationDto>(
+        response.data,
+        (data) => QuotationDto.fromJson(data! as Map<String, dynamic>),
+      );
+      return envelope.requireData();
+    } on DioException catch (e) {
+      throw FailureMapper.from(e);
+    }
+  }
+}
+
+/// One ranked template from `/api/quotation-templates/match`.
+class TemplateMatchDto {
+  const TemplateMatchDto({
+    required this.id,
+    required this.name,
+    required this.matchPercentage,
+    this.description,
+    this.coverImageUrl,
+    this.durationNights,
+    this.durationDays,
+    this.hotelTier,
+    this.basePrice,
+    this.cities = const [],
+    this.belowThreshold = false,
+  });
+
+  factory TemplateMatchDto.fromJson(Map<String, dynamic> json) => TemplateMatchDto(
+        id: json['id'] as String? ?? '',
+        name: json['name'] as String? ?? 'Template',
+        matchPercentage: (json['matchPercentage'] as num?)?.toInt() ?? 0,
+        description: json['description'] as String?,
+        coverImageUrl: json['coverImageUrl'] as String?,
+        durationNights: (json['durationNights'] as num?)?.toInt(),
+        durationDays: (json['durationDays'] as num?)?.toInt(),
+        hotelTier: (json['hotelTier'] as num?)?.toInt(),
+        basePrice: json['basePrice'] as num?,
+        cities: (json['cities'] as List? ?? const [])
+            .map((c) => c.toString())
+            .toList(growable: false),
+        belowThreshold: json['belowThreshold'] as bool? ?? false,
+      );
+
+  final String id;
+  final String name;
+
+  /// How well the template fits the lead, 0–100, as the server scored it.
+  final int matchPercentage;
+
+  final String? description;
+  final String? coverImageUrl;
+  final int? durationNights;
+  final int? durationDays;
+
+  /// Star tier the template is priced at.
+  final int? hotelTier;
+
+  final num? basePrice;
+  final List<String> cities;
+
+  /// The server scored this below its own match threshold — shown, but flagged.
+  final bool belowThreshold;
 }

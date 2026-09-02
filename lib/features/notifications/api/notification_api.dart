@@ -1,8 +1,8 @@
 import 'package:dio/dio.dart';
 
-import '../../core/formatters/app_date.dart';
-import '../dto/envelopes.dart';
-import '../remote/failure_mapper.dart';
+import '../../../core/formatters/app_date.dart';
+import '../../../data/dto/envelopes.dart';
+import '../../../data/remote/failure_mapper.dart';
 
 /// One notification row.
 class AppNotification {
