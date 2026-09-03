@@ -158,6 +158,82 @@ class BookingApi {
     return envelope.data ?? const [];
   }
 
+  /// `PUT /api/bookings/{publicId}`.
+  ///
+  /// **Only the fields the agent actually changed go in the body.** Every field
+  /// on `UpdateBookingRequestDTO` is optional and null means *leave it alone* —
+  /// which is why the DTO also carries `clearVendor`, `clearTaxOverrides` and
+  /// `clearCommission`. Sending a null to mean "empty it" would silently keep
+  /// the old value; sending a zero would rewrite the money.
+  Future<BookingDto> updateBooking(
+    String publicId,
+    Map<String, dynamic> body,
+  ) async {
+    try {
+      final response = await _dio.put<dynamic>(
+        '/api/bookings/$publicId',
+        data: body,
+      );
+      final envelope = ApiEnvelope.from<BookingDto>(
+        response.data,
+        (data) => BookingDto.fromJson(data! as Map<String, dynamic>),
+      );
+      return envelope.requireData();
+    } on DioException catch (e) {
+      throw FailureMapper.from(e);
+    }
+  }
+
+  /// `POST /api/bookings/{publicId}/cancel` — the real way to end a booking.
+  ///
+  /// The booking row is **always kept**, status `CANCELLED`, for audit and
+  /// financial history. What [action] decides is the *lead*: `MOVE_TO_LEAD`
+  /// reopens it (stage → REOPENED) so it can be sold again, while
+  /// `PERMANENT_DELETE_LEAD` sends the lead to Trash along with its quotations
+  /// and needs `LEAD_PERMANENT_DELETE`.
+  ///
+  /// The server works the cancellation charge out from the policy pinned on the
+  /// booking — the one the customer was quoted under. This app sends no
+  /// override for it.
+  Future<BookingDto> cancelBooking(
+    String publicId, {
+    required String action,
+    String? reason,
+  }) async {
+    try {
+      final response = await _dio.post<dynamic>(
+        '/api/bookings/$publicId/cancel',
+        data: <String, dynamic>{
+          'action': action,
+          'reason': ?(reason != null && reason.trim().isEmpty
+              ? null
+              : reason?.trim()),
+        },
+      );
+      final envelope = ApiEnvelope.from<BookingDto>(
+        response.data,
+        (data) => BookingDto.fromJson(data! as Map<String, dynamic>),
+      );
+      return envelope.requireData();
+    } on DioException catch (e) {
+      throw FailureMapper.from(e);
+    }
+  }
+
+  /// `DELETE /api/bookings/{publicId}` — a **soft** delete, and only for a
+  /// booking that never went anywhere.
+  ///
+  /// The server refuses a `CONFIRMED` or `COMPLETED` one outright: *"Cannot
+  /// delete a CONFIRMED booking. Cancel it first."* This is for the row created
+  /// by mistake, not for ending a trip that was sold.
+  Future<void> deleteBooking(String publicId) async {
+    try {
+      await _dio.delete<dynamic>('/api/bookings/$publicId');
+    } on DioException catch (e) {
+      throw FailureMapper.from(e);
+    }
+  }
+
   // ── Lead → booking ─────────────────────────────────────────────────────
   //
   // A booking is made from its lead, not from a quotation: the backend's own

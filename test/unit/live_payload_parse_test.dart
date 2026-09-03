@@ -139,6 +139,17 @@ void main() {
       parsesOne('booking_detail', (j) => BookingMapper.toEntity(BookingDto.fromJson(j)));
     });
 
+    test('booking straight out of a lead conversion', () {
+      // The one booking payload that carries a `tripSnapshot`, because the
+      // conversion builds it from the lead. Reading that object into the DTO's
+      // `String?` threw a TypeError, and the screen span for ever on a booking
+      // the server had already created.
+      parsesOne(
+        'booking_convert',
+        (j) => BookingMapper.toEntity(BookingDto.fromJson(j)),
+      );
+    });
+
     test('quotation detail', () {
       parsesOne('quotation_detail', (j) => QuotationMapper.toEntity(QuotationDto.fromJson(j)));
     });

@@ -17,6 +17,8 @@ import '../../../widgets/app_toast.dart';
 import '../../../widgets/state_views.dart';
 import '../../../widgets/status_chip.dart';
 import '../providers/bookings_controller.dart';
+import 'widgets/booking_cancel_sheet.dart';
+import 'widgets/booking_edit_sheet.dart';
 import '../../../router/safe_pop.dart';
 
 /// Booking detail — payment summary, travel, service rows and ops readiness.
@@ -42,6 +44,10 @@ class BookingDetailScreen extends ConsumerWidget {
           tooltip: 'Back',
         ),
         title: Text('Booking', style: AppType.h2),
+        actions: [
+          if (async.value != null)
+            _BookingMenu(booking: async.value!, publicId: publicId),
+        ],
         shape: const Border(bottom: BorderSide(color: AppColors.line)),
       ),
       body: switch (async) {
@@ -586,6 +592,141 @@ class _Section extends StatelessWidget {
             ),
         ],
       ),
+    );
+  }
+}
+
+enum _BookingAction { edit, cancel, delete }
+
+/// Edit, cancel and delete — three different things, deliberately not one.
+///
+/// **Delete only shows on a booking that never went anywhere.** The server
+/// refuses a CONFIRMED or COMPLETED one — *"Cannot delete a CONFIRMED booking.
+/// Cancel it first."* — so offering it there would only produce an error the
+/// agent could do nothing about. Cancelling is the operation for a trip that
+/// was actually sold, and it keeps the row.
+class _BookingMenu extends ConsumerWidget {
+  const _BookingMenu({required this.booking, required this.publicId});
+
+  final Booking booking;
+  final String publicId;
+
+  bool get _deletable =>
+      booking.status != BookingStatus.confirmed &&
+      booking.status != BookingStatus.completed &&
+      booking.status != BookingStatus.cancelled;
+
+  bool get _cancellable =>
+      booking.status != BookingStatus.cancelled &&
+      booking.status != BookingStatus.refunded;
+
+  Future<void> _edit(BuildContext context, WidgetRef ref) async {
+    final saved = await BookingEditSheet.show(context, booking: booking);
+    if (!saved) return;
+    ref.invalidate(bookingDetailProvider(publicId));
+    ref.invalidate(bookingsControllerProvider);
+    if (context.mounted) {
+      AppToast.success(context, 'Booking updated', booking.code ?? '');
+    }
+  }
+
+  Future<void> _cancel(BuildContext context, WidgetRef ref) async {
+    final done = await BookingCancelSheet.show(context, booking: booking);
+    if (!done) return;
+    ref.invalidate(bookingDetailProvider(publicId));
+    ref.invalidate(bookingsControllerProvider);
+    if (context.mounted) {
+      AppToast.success(context, 'Booking cancelled', booking.code ?? '');
+    }
+  }
+
+  Future<void> _delete(BuildContext context, WidgetRef ref) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: AppColors.surface,
+        title: Text('Delete ${booking.code ?? 'this booking'}?', style: AppType.h3),
+        content: Text(
+          'It moves to Trash. Use this only for a booking created by mistake — '
+          'to end a trip that was sold, cancel it instead so the record and its '
+          'money stay on file.',
+          style: AppType.bodySm,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Keep it'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            style: TextButton.styleFrom(foregroundColor: AppColors.danger),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    try {
+      await ref.read(bookingApiProvider).deleteBooking(publicId);
+      ref.invalidate(bookingsControllerProvider);
+      if (context.mounted) {
+        AppToast.success(context, 'Booking deleted', booking.code ?? '');
+        context.backOrHome();
+      }
+    } on Failure catch (f) {
+      if (context.mounted) AppToast.error(context, 'Could not delete', f.message);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return PopupMenuButton<_BookingAction>(
+      tooltip: 'Booking actions',
+      color: AppColors.surface,
+      icon: const AppIcon(Ic.dots, size: 18, color: AppColors.body),
+      onSelected: (action) => switch (action) {
+        _BookingAction.edit => _edit(context, ref),
+        _BookingAction.cancel => _cancel(context, ref),
+        _BookingAction.delete => _delete(context, ref),
+      },
+      itemBuilder: (_) => [
+        PopupMenuItem(
+          value: _BookingAction.edit,
+          child: Row(
+            children: [
+              const AppIcon(Ic.edit, size: 16, color: AppColors.muted),
+              const SizedBox(width: AppSpacing.x10),
+              Text('Edit', style: AppType.body),
+            ],
+          ),
+        ),
+        if (_cancellable)
+          PopupMenuItem(
+            value: _BookingAction.cancel,
+            child: Row(
+              children: [
+                const AppIcon(Ic.close, size: 16, color: AppColors.warn),
+                const SizedBox(width: AppSpacing.x10),
+                Text('Cancel booking', style: AppType.body),
+              ],
+            ),
+          ),
+        if (_deletable)
+          PopupMenuItem(
+            value: _BookingAction.delete,
+            child: Row(
+              children: [
+                const AppIcon(Ic.trash, size: 16, color: AppColors.danger),
+                const SizedBox(width: AppSpacing.x10),
+                Text(
+                  'Delete',
+                  style: AppType.body.copyWith(color: AppColors.danger),
+                ),
+              ],
+            ),
+          ),
+      ],
     );
   }
 }

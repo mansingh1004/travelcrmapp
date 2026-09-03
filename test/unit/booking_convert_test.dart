@@ -63,6 +63,47 @@ void main() {
       expect(booking.publicId, 'b1');
     });
 
+    test('parses a reply carrying the trip snapshot the conversion builds',
+        () async {
+      // `tripSnapshot` is a **TripSnapshotResponse object**, not a string, and
+      // conversion is the path that fills it — `attachTripSnapshot(
+      // buildTripSnapshotFromLead(lead))`. Reading it into a `String?` threw a
+      // TypeError after the booking had already been created, which showed up
+      // as a spinner that never stopped.
+      final adapter = _CapturingAdapter(
+        '{"success":true,"data":{"publicId":"b1","bookingCode":"BKG-26-0016",'
+        '"status":"PENDING","tripSnapshot":{"packageType":"Family",'
+        '"itinerary":[{"destination":"mumbai","city":"gateway","nights":2},'
+        '{"destination":"mumbai","city":"Juhu","nights":2}]}}}',
+      );
+
+      final booking = await BookingApi(_dio(adapter)).convertLeadToBooking(
+        leadPublicId: 'lead-1',
+        idempotencyKey: 'key-1',
+        body: const {'customerName': 'rahul'},
+      );
+
+      expect(booking.publicId, 'b1');
+      expect(
+        booking.tripSnapshot,
+        'gateway → Juhu',
+        reason: 'the legs become the one line the booking screen shows',
+      );
+    });
+
+    test('still accepts a plain string trip snapshot', () async {
+      final adapter = _CapturingAdapter(
+        '{"success":true,"data":{"publicId":"b1","tripSnapshot":"Goa, 3N"}}',
+      );
+      final booking = await BookingApi(_dio(adapter)).convertLeadToBooking(
+        leadPublicId: 'lead-1',
+        idempotencyKey: 'key-1',
+        body: const {},
+      );
+
+      expect(booking.tripSnapshot, 'Goa, 3N');
+    });
+
     test('sends only what the endpoint validates, plus the quotation', () {
       final body = buildConversionBody(
         customerName: '  rahul  ',
