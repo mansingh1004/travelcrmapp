@@ -42,18 +42,19 @@ class QuotationsState {
     int? pageNumber,
     bool? hasMore,
     bool? loadingMore,
-  }) =>
-      QuotationsState(
-        quotations: quotations ?? this.quotations,
-        totalElements: totalElements ?? this.totalElements,
-        pageNumber: pageNumber ?? this.pageNumber,
-        hasMore: hasMore ?? this.hasMore,
-        loadingMore: loadingMore ?? this.loadingMore,
-      );
+  }) => QuotationsState(
+    quotations: quotations ?? this.quotations,
+    totalElements: totalElements ?? this.totalElements,
+    pageNumber: pageNumber ?? this.pageNumber,
+    hasMore: hasMore ?? this.hasMore,
+    loadingMore: loadingMore ?? this.loadingMore,
+  );
 }
 
 final quotationFilterProvider =
-    NotifierProvider<QuotationFilterNotifier, QuotationFilter>(QuotationFilterNotifier.new);
+    NotifierProvider<QuotationFilterNotifier, QuotationFilter>(
+      QuotationFilterNotifier.new,
+    );
 
 class QuotationFilterNotifier extends Notifier<QuotationFilter> {
   Timer? _debounce;
@@ -69,7 +70,9 @@ class QuotationFilterNotifier extends Notifier<QuotationFilter> {
   void setQuery(String query) {
     _debounce?.cancel();
     _debounce = Timer(const Duration(milliseconds: 350), () {
-      state = state.copyWith(search: query.trim().isEmpty ? null : query.trim());
+      state = state.copyWith(
+        search: query.trim().isEmpty ? null : query.trim(),
+      );
     });
   }
 
@@ -79,7 +82,9 @@ class QuotationFilterNotifier extends Notifier<QuotationFilter> {
 }
 
 final quotationsControllerProvider =
-    AsyncNotifierProvider<QuotationsController, QuotationsState>(QuotationsController.new);
+    AsyncNotifierProvider<QuotationsController, QuotationsState>(
+      QuotationsController.new,
+    );
 
 class QuotationsController extends AsyncNotifier<QuotationsState> {
   QuotationRepository get _repo => ref.read(quotationRepositoryProvider);
@@ -89,7 +94,10 @@ class QuotationsController extends AsyncNotifier<QuotationsState> {
       _fetchFirstPage(ref.watch(quotationFilterProvider));
 
   Future<QuotationsState> _fetchFirstPage(QuotationFilter filter) async {
-    final page = await _repo.getQuotations(size: AppConfig.pageSize, filter: filter);
+    final page = await _repo.getQuotations(
+      size: AppConfig.pageSize,
+      filter: filter,
+    );
     return QuotationsState(
       quotations: page.quotations,
       totalElements: page.totalElements,
@@ -143,12 +151,15 @@ class QuotationsController extends AsyncNotifier<QuotationsState> {
   }
 }
 
-final quotationDetailProvider = FutureProvider.autoDispose.family<Quotation, String>(
-  (ref, publicId) => ref.watch(quotationRepositoryProvider).getQuotation(publicId),
-);
+final quotationDetailProvider = FutureProvider.autoDispose
+    .family<Quotation, String>(
+      (ref, publicId) =>
+          ref.watch(quotationRepositoryProvider).getQuotation(publicId),
+    );
 
 /// Quotations raised for one lead — the lead detail screen's list.
-final leadQuotationsProvider =
-    FutureProvider.autoDispose.family<List<QuotationSummary>, String>(
-  (ref, leadId) => ref.watch(quotationRepositoryProvider).getForLead(leadId),
-);
+final leadQuotationsProvider = FutureProvider.autoDispose
+    .family<List<QuotationSummary>, String>(
+      (ref, leadId) =>
+          ref.watch(quotationRepositoryProvider).getForLead(leadId),
+    );

@@ -169,6 +169,7 @@ class LeadItineraryStop {
     required this.destination,
     required this.city,
     required this.nights,
+    this.destinationId,
   });
 
   /// The stop's public UUID.
@@ -176,6 +177,10 @@ class LeadItineraryStop {
   final String destination;
   final String city;
   final int nights;
+
+  /// The destination this stop sits under, when the server sent it. Used to
+  /// narrow the hotel and sightseeing masters when quoting for this lead.
+  final int? destinationId;
 }
 
 /// One activity-log entry (`LeadLogResponseDto`) — the follow-up timeline.

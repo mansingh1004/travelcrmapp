@@ -158,8 +158,126 @@ class BookingApi {
     return envelope.data ?? const [];
   }
 
+  // ── Lead → booking ─────────────────────────────────────────────────────
+  //
+  // A booking is made from its lead, not from a quotation: the backend's own
+  // note says "Lead → Booking conversion lives on the lead-centric path". The
+  // quotation rides along as `quotationPublicId`, which links it and pins the
+  // cancellation policy the customer was quoted under.
+
+  /// `POST /api/leads/{leadPublicId}/convert-to-booking`.
+  ///
+  /// The `Idempotency-Key` header is **required** — without it the server
+  /// answers 400 — and it is what makes a double tap safe: the same key with
+  /// the same body replays the booking already created instead of making a
+  /// second one.
+  ///
+  /// Refusals worth expecting: 409 when the lead already has an active booking
+  /// (the message names it), and 400 when the lead has no phone — the customer
+  /// is resolved by phone, so there is nothing to match on.
+  Future<BookingDto> convertLeadToBooking({
+    required String leadPublicId,
+    required String idempotencyKey,
+    required Map<String, dynamic> body,
+  }) async {
+    try {
+      final response = await _dio.post<dynamic>(
+        '/api/leads/$leadPublicId/convert-to-booking',
+        data: body,
+        options: Options(headers: {'Idempotency-Key': idempotencyKey}),
+      );
+      final envelope = ApiEnvelope.from<BookingDto>(
+        response.data,
+        (data) => BookingDto.fromJson(data! as Map<String, dynamic>),
+      );
+      return envelope.requireData();
+    } on DioException catch (e) {
+      throw FailureMapper.from(e);
+    }
+  }
+
+  /// `POST /api/bookings/preview` — the money a create would stamp.
+  ///
+  /// GST, TCS, the total and the net profit are the server's, computed under
+  /// this tenant's accounting settings. The controller says why in as many
+  /// words: it exists "so the browser never computes tax itself". Nothing here
+  /// derives tax; the screen only displays what comes back.
+  Future<BookingFinancials> previewFinancials({
+    required double customerAmount,
+    double? vendorCost,
+    double? paidAmount,
+    bool? applyGst,
+    bool? gstInclusive,
+    bool? applyTcs,
+    bool? overseasTourPackage,
+  }) async {
+    try {
+      final response = await _dio.post<dynamic>(
+        '/api/bookings/preview',
+        data: <String, dynamic>{
+          'customerAmount': customerAmount,
+          'vendorCost': ?vendorCost,
+          'paidAmount': ?paidAmount,
+          'applyGst': ?applyGst,
+          'gstInclusive': ?gstInclusive,
+          'applyTcs': ?applyTcs,
+          'overseasTourPackage': ?overseasTourPackage,
+        },
+      );
+      final envelope = ApiEnvelope.from<BookingFinancials>(
+        response.data,
+        (data) => BookingFinancials.fromJson(data! as Map<String, dynamic>),
+      );
+      return envelope.requireData();
+    } on DioException catch (e) {
+      throw FailureMapper.from(e);
+    }
+  }
+
   static String _date(DateTime value) =>
       '${value.year.toString().padLeft(4, '0')}-'
       '${value.month.toString().padLeft(2, '0')}-'
       '${value.day.toString().padLeft(2, '0')}';
+}
+
+/// What `POST /api/bookings/preview` says a booking would cost.
+///
+/// Every figure here is the server's. None of it is recomputed on the device —
+/// GST and TCS depend on the tenant's accounting settings, which this app does
+/// not hold and must never guess at.
+class BookingFinancials {
+  const BookingFinancials({
+    this.customerAmount,
+    this.gst,
+    this.tcs,
+    this.totalPayable,
+    this.commissionAmount,
+    this.netProfit,
+    this.pendingAmount,
+    this.paymentStatus,
+  });
+
+  factory BookingFinancials.fromJson(Map<String, dynamic> json) =>
+      BookingFinancials(
+        customerAmount: (json['customerAmount'] as num?)?.toDouble(),
+        gst: (json['gst'] as num?)?.toDouble(),
+        tcs: (json['tcs'] as num?)?.toDouble(),
+        totalPayable: (json['totalPayable'] as num?)?.toDouble(),
+        commissionAmount: (json['commissionAmount'] as num?)?.toDouble(),
+        netProfit: (json['netProfit'] as num?)?.toDouble(),
+        pendingAmount: (json['pendingAmount'] as num?)?.toDouble(),
+        paymentStatus: json['paymentStatus'] as String?,
+      );
+
+  final double? customerAmount;
+  final double? gst;
+  final double? tcs;
+  final double? totalPayable;
+  final double? commissionAmount;
+
+  /// Shown to the agent, never to the customer.
+  final double? netProfit;
+
+  final double? pendingAmount;
+  final String? paymentStatus;
 }

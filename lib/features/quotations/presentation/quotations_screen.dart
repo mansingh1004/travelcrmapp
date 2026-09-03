@@ -90,7 +90,8 @@ class _QuotationsScreenState extends ConsumerState<QuotationsScreen> {
               height: 42,
               child: TextField(
                 controller: _searchController,
-                onChanged: (q) => ref.read(quotationFilterProvider.notifier).setQuery(q),
+                onChanged: (q) =>
+                    ref.read(quotationFilterProvider.notifier).setQuery(q),
                 style: AppType.fieldValue,
                 cursorColor: AppColors.primary,
                 textInputAction: TextInputAction.search,
@@ -98,10 +99,16 @@ class _QuotationsScreenState extends ConsumerState<QuotationsScreen> {
                   hintText: 'Search customer, destination, quote no.',
                   fillColor: AppColors.canvas,
                   prefixIcon: Padding(
-                    padding: EdgeInsets.only(left: AppSpacing.x12, right: AppSpacing.x8),
+                    padding: EdgeInsets.only(
+                      left: AppSpacing.x12,
+                      right: AppSpacing.x8,
+                    ),
                     child: AppIcon(Ic.search, size: 18, color: AppColors.faint),
                   ),
-                  prefixIconConstraints: BoxConstraints(minWidth: 0, minHeight: 0),
+                  prefixIconConstraints: BoxConstraints(
+                    minWidth: 0,
+                    minHeight: 0,
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: AppRadii.rTile,
                     borderSide: BorderSide.none,
@@ -124,7 +131,8 @@ class _QuotationsScreenState extends ConsumerState<QuotationsScreen> {
             // the *other* tabs would need one request each, so only the active
             // tab shows a number rather than showing four guesses.
             activeCount: async.value?.totalElements,
-            onSelect: (s) => ref.read(quotationFilterProvider.notifier).setStage(s),
+            onSelect: (s) =>
+                ref.read(quotationFilterProvider.notifier).setStage(s),
           ),
           if (async.value != null && async.value!.quotations.isNotEmpty)
             _ValueStrip(state: async.value!),
@@ -132,45 +140,52 @@ class _QuotationsScreenState extends ConsumerState<QuotationsScreen> {
             child: switch (async) {
               AsyncLoading() when async.value == null => const SkeletonList(),
               AsyncError(:final error) => ErrorStateView(
-                  failure: asFailure(error),
-                  onRetry: () => ref.read(quotationsControllerProvider.notifier).refresh(),
-                ),
+                failure: asFailure(error),
+                onRetry: () =>
+                    ref.read(quotationsControllerProvider.notifier).refresh(),
+              ),
               _ => RefreshIndicator(
-                  color: AppColors.primary,
-                  onRefresh: () =>
-                      ref.read(quotationsControllerProvider.notifier).refresh(),
-                  child: async.value!.quotations.isEmpty
-                      ? _emptyState(filter)
-                      : ListView.separated(
-                          controller: _scrollController,
-                          padding: const EdgeInsets.all(AppSpacing.gutter),
-                          itemCount: async.value!.quotations.length +
-                              (async.value!.hasMore ? 1 : 0),
-                          separatorBuilder: (_, _) =>
-                              const SizedBox(height: AppSpacing.x12),
-                          itemBuilder: (context, index) {
-                            final rows = async.value!.quotations;
-                            if (index >= rows.length) {
-                              return const Padding(
-                                padding: EdgeInsets.symmetric(vertical: AppSpacing.x20),
-                                child: Center(
-                                  child: SizedBox(
-                                    width: 22,
-                                    height: 22,
-                                    child: CircularProgressIndicator(strokeWidth: 2),
+                color: AppColors.primary,
+                onRefresh: () =>
+                    ref.read(quotationsControllerProvider.notifier).refresh(),
+                child: async.value!.quotations.isEmpty
+                    ? _emptyState(filter)
+                    : ListView.separated(
+                        controller: _scrollController,
+                        padding: const EdgeInsets.all(AppSpacing.gutter),
+                        itemCount:
+                            async.value!.quotations.length +
+                            (async.value!.hasMore ? 1 : 0),
+                        separatorBuilder: (_, _) =>
+                            const SizedBox(height: AppSpacing.x12),
+                        itemBuilder: (context, index) {
+                          final rows = async.value!.quotations;
+                          if (index >= rows.length) {
+                            return const Padding(
+                              padding: EdgeInsets.symmetric(
+                                vertical: AppSpacing.x20,
+                              ),
+                              child: Center(
+                                child: SizedBox(
+                                  width: 22,
+                                  height: 22,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
                                   ),
                                 ),
-                              );
-                            }
-                            final quotation = rows[index];
-                            return QuotationCard(
-                              quotation: quotation,
-                              onTap: () => context
-                                  .push(Routes.quotationPreviewFor(quotation.id)),
+                              ),
                             );
-                          },
-                        ),
-                ),
+                          }
+                          final quotation = rows[index];
+                          return QuotationCard(
+                            quotation: quotation,
+                            onTap: () => context.push(
+                              Routes.quotationPreviewFor(quotation.id),
+                            ),
+                          );
+                        },
+                      ),
+              ),
             },
           ),
         ],
@@ -282,7 +297,10 @@ class _Stat extends StatelessWidget {
           Text(label, style: AppType.caption.copyWith(fontSize: 11)),
           Text(
             caption,
-            style: AppType.caption.copyWith(fontSize: 10, color: AppColors.faint),
+            style: AppType.caption.copyWith(
+              fontSize: 10,
+              color: AppColors.faint,
+            ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
@@ -405,7 +423,11 @@ class _Tab extends StatelessWidget {
 }
 
 class QuotationCard extends StatelessWidget {
-  const QuotationCard({super.key, required this.quotation, required this.onTap});
+  const QuotationCard({
+    super.key,
+    required this.quotation,
+    required this.onTap,
+  });
 
   final QuotationSummary quotation;
   final VoidCallback onTap;
@@ -616,15 +638,28 @@ class _CardActionsState extends ConsumerState<_CardActions> {
     if (_busy) return;
     setState(() => _busy = true);
     try {
-      final link = await ref.read(quotationRepositoryProvider).getShareLink(_id);
+      final link = await ref
+          .read(quotationRepositoryProvider)
+          .getShareLink(_id);
       if (!mounted) return;
       if (link == null) {
-        AppToast.error(context, 'No PDF', 'This quotation has no public link yet.');
+        AppToast.error(
+          context,
+          'No PDF',
+          'This quotation has no public link yet.',
+        );
         return;
       }
-      final ok = await launchUrl(Uri.parse(link), mode: LaunchMode.externalApplication);
+      final ok = await launchUrl(
+        Uri.parse(link),
+        mode: LaunchMode.externalApplication,
+      );
       if (!ok && mounted) {
-        AppToast.error(context, 'Could not open', 'No app available to open the PDF.');
+        AppToast.error(
+          context,
+          'Could not open',
+          'No app available to open the PDF.',
+        );
       }
     } on Failure catch (f) {
       if (mounted) AppToast.error(context, 'Could not open PDF', f.message);

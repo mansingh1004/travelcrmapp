@@ -992,7 +992,9 @@ as String?,
 mixin _$LeadItineraryDto {
 
 /// A UUID string, like every other public id the server exposes.
- String? get id; String? get destination; String? get city; int? get nights; int? get dayNumber;
+ String? get id; String? get destination; String? get city; int? get nights; int? get dayNumber;/// The geography ids behind the two names above. A quotation needs the
+/// destination id to filter the hotel and sightseeing masters by it.
+ int? get destinationId; int? get cityId;
 /// Create a copy of LeadItineraryDto
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -1005,16 +1007,16 @@ $LeadItineraryDtoCopyWith<LeadItineraryDto> get copyWith => _$LeadItineraryDtoCo
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is LeadItineraryDto&&(identical(other.id, id) || other.id == id)&&(identical(other.destination, destination) || other.destination == destination)&&(identical(other.city, city) || other.city == city)&&(identical(other.nights, nights) || other.nights == nights)&&(identical(other.dayNumber, dayNumber) || other.dayNumber == dayNumber));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is LeadItineraryDto&&(identical(other.id, id) || other.id == id)&&(identical(other.destination, destination) || other.destination == destination)&&(identical(other.city, city) || other.city == city)&&(identical(other.nights, nights) || other.nights == nights)&&(identical(other.dayNumber, dayNumber) || other.dayNumber == dayNumber)&&(identical(other.destinationId, destinationId) || other.destinationId == destinationId)&&(identical(other.cityId, cityId) || other.cityId == cityId));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,destination,city,nights,dayNumber);
+int get hashCode => Object.hash(runtimeType,id,destination,city,nights,dayNumber,destinationId,cityId);
 
 @override
 String toString() {
-  return 'LeadItineraryDto(id: $id, destination: $destination, city: $city, nights: $nights, dayNumber: $dayNumber)';
+  return 'LeadItineraryDto(id: $id, destination: $destination, city: $city, nights: $nights, dayNumber: $dayNumber, destinationId: $destinationId, cityId: $cityId)';
 }
 
 
@@ -1025,7 +1027,7 @@ abstract mixin class $LeadItineraryDtoCopyWith<$Res>  {
   factory $LeadItineraryDtoCopyWith(LeadItineraryDto value, $Res Function(LeadItineraryDto) _then) = _$LeadItineraryDtoCopyWithImpl;
 @useResult
 $Res call({
- String? id, String? destination, String? city, int? nights, int? dayNumber
+ String? id, String? destination, String? city, int? nights, int? dayNumber, int? destinationId, int? cityId
 });
 
 
@@ -1042,13 +1044,15 @@ class _$LeadItineraryDtoCopyWithImpl<$Res>
 
 /// Create a copy of LeadItineraryDto
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? destination = freezed,Object? city = freezed,Object? nights = freezed,Object? dayNumber = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? destination = freezed,Object? city = freezed,Object? nights = freezed,Object? dayNumber = freezed,Object? destinationId = freezed,Object? cityId = freezed,}) {
   return _then(_self.copyWith(
 id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String?,destination: freezed == destination ? _self.destination : destination // ignore: cast_nullable_to_non_nullable
 as String?,city: freezed == city ? _self.city : city // ignore: cast_nullable_to_non_nullable
 as String?,nights: freezed == nights ? _self.nights : nights // ignore: cast_nullable_to_non_nullable
 as int?,dayNumber: freezed == dayNumber ? _self.dayNumber : dayNumber // ignore: cast_nullable_to_non_nullable
+as int?,destinationId: freezed == destinationId ? _self.destinationId : destinationId // ignore: cast_nullable_to_non_nullable
+as int?,cityId: freezed == cityId ? _self.cityId : cityId // ignore: cast_nullable_to_non_nullable
 as int?,
   ));
 }
@@ -1134,10 +1138,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String? id,  String? destination,  String? city,  int? nights,  int? dayNumber)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String? id,  String? destination,  String? city,  int? nights,  int? dayNumber,  int? destinationId,  int? cityId)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _LeadItineraryDto() when $default != null:
-return $default(_that.id,_that.destination,_that.city,_that.nights,_that.dayNumber);case _:
+return $default(_that.id,_that.destination,_that.city,_that.nights,_that.dayNumber,_that.destinationId,_that.cityId);case _:
   return orElse();
 
 }
@@ -1155,10 +1159,10 @@ return $default(_that.id,_that.destination,_that.city,_that.nights,_that.dayNumb
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String? id,  String? destination,  String? city,  int? nights,  int? dayNumber)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String? id,  String? destination,  String? city,  int? nights,  int? dayNumber,  int? destinationId,  int? cityId)  $default,) {final _that = this;
 switch (_that) {
 case _LeadItineraryDto():
-return $default(_that.id,_that.destination,_that.city,_that.nights,_that.dayNumber);case _:
+return $default(_that.id,_that.destination,_that.city,_that.nights,_that.dayNumber,_that.destinationId,_that.cityId);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -1175,10 +1179,10 @@ return $default(_that.id,_that.destination,_that.city,_that.nights,_that.dayNumb
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String? id,  String? destination,  String? city,  int? nights,  int? dayNumber)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String? id,  String? destination,  String? city,  int? nights,  int? dayNumber,  int? destinationId,  int? cityId)?  $default,) {final _that = this;
 switch (_that) {
 case _LeadItineraryDto() when $default != null:
-return $default(_that.id,_that.destination,_that.city,_that.nights,_that.dayNumber);case _:
+return $default(_that.id,_that.destination,_that.city,_that.nights,_that.dayNumber,_that.destinationId,_that.cityId);case _:
   return null;
 
 }
@@ -1190,7 +1194,7 @@ return $default(_that.id,_that.destination,_that.city,_that.nights,_that.dayNumb
 @JsonSerializable()
 
 class _LeadItineraryDto implements LeadItineraryDto {
-  const _LeadItineraryDto({this.id, this.destination, this.city, this.nights, this.dayNumber});
+  const _LeadItineraryDto({this.id, this.destination, this.city, this.nights, this.dayNumber, this.destinationId, this.cityId});
   factory _LeadItineraryDto.fromJson(Map<String, dynamic> json) => _$LeadItineraryDtoFromJson(json);
 
 /// A UUID string, like every other public id the server exposes.
@@ -1199,6 +1203,10 @@ class _LeadItineraryDto implements LeadItineraryDto {
 @override final  String? city;
 @override final  int? nights;
 @override final  int? dayNumber;
+/// The geography ids behind the two names above. A quotation needs the
+/// destination id to filter the hotel and sightseeing masters by it.
+@override final  int? destinationId;
+@override final  int? cityId;
 
 /// Create a copy of LeadItineraryDto
 /// with the given fields replaced by the non-null parameter values.
@@ -1213,16 +1221,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _LeadItineraryDto&&(identical(other.id, id) || other.id == id)&&(identical(other.destination, destination) || other.destination == destination)&&(identical(other.city, city) || other.city == city)&&(identical(other.nights, nights) || other.nights == nights)&&(identical(other.dayNumber, dayNumber) || other.dayNumber == dayNumber));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _LeadItineraryDto&&(identical(other.id, id) || other.id == id)&&(identical(other.destination, destination) || other.destination == destination)&&(identical(other.city, city) || other.city == city)&&(identical(other.nights, nights) || other.nights == nights)&&(identical(other.dayNumber, dayNumber) || other.dayNumber == dayNumber)&&(identical(other.destinationId, destinationId) || other.destinationId == destinationId)&&(identical(other.cityId, cityId) || other.cityId == cityId));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,destination,city,nights,dayNumber);
+int get hashCode => Object.hash(runtimeType,id,destination,city,nights,dayNumber,destinationId,cityId);
 
 @override
 String toString() {
-  return 'LeadItineraryDto(id: $id, destination: $destination, city: $city, nights: $nights, dayNumber: $dayNumber)';
+  return 'LeadItineraryDto(id: $id, destination: $destination, city: $city, nights: $nights, dayNumber: $dayNumber, destinationId: $destinationId, cityId: $cityId)';
 }
 
 
@@ -1233,7 +1241,7 @@ abstract mixin class _$LeadItineraryDtoCopyWith<$Res> implements $LeadItineraryD
   factory _$LeadItineraryDtoCopyWith(_LeadItineraryDto value, $Res Function(_LeadItineraryDto) _then) = __$LeadItineraryDtoCopyWithImpl;
 @override @useResult
 $Res call({
- String? id, String? destination, String? city, int? nights, int? dayNumber
+ String? id, String? destination, String? city, int? nights, int? dayNumber, int? destinationId, int? cityId
 });
 
 
@@ -1250,13 +1258,15 @@ class __$LeadItineraryDtoCopyWithImpl<$Res>
 
 /// Create a copy of LeadItineraryDto
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = freezed,Object? destination = freezed,Object? city = freezed,Object? nights = freezed,Object? dayNumber = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = freezed,Object? destination = freezed,Object? city = freezed,Object? nights = freezed,Object? dayNumber = freezed,Object? destinationId = freezed,Object? cityId = freezed,}) {
   return _then(_LeadItineraryDto(
 id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String?,destination: freezed == destination ? _self.destination : destination // ignore: cast_nullable_to_non_nullable
 as String?,city: freezed == city ? _self.city : city // ignore: cast_nullable_to_non_nullable
 as String?,nights: freezed == nights ? _self.nights : nights // ignore: cast_nullable_to_non_nullable
 as int?,dayNumber: freezed == dayNumber ? _self.dayNumber : dayNumber // ignore: cast_nullable_to_non_nullable
+as int?,destinationId: freezed == destinationId ? _self.destinationId : destinationId // ignore: cast_nullable_to_non_nullable
+as int?,cityId: freezed == cityId ? _self.cityId : cityId // ignore: cast_nullable_to_non_nullable
 as int?,
   ));
 }
@@ -1546,7 +1556,8 @@ as String?,
 /// @nodoc
 mixin _$LeadStatsSummaryDto {
 
- int? get totalLeads; int? get activeLeads; int? get convertedLeads; int? get lostLeads; int? get proposalSentLeads; List<StageCountDto> get byStage; List<TypeCountDto> get byType; num? get activePipelineValue; int? get activeWithBudget; num? get quotedValue; int? get followUpsOverdue; int? get followUpsDueToday; int? get createdInPeriod; int? get convertedInPeriod; double? get conversionRate;
+ int? get totalLeads; int? get activeLeads; int? get convertedLeads; int? get lostLeads; int? get proposalSentLeads; List<StageCountDto> get byStage; List<TypeCountDto> get byType; num? get activePipelineValue; int? get activeWithBudget; num? get quotedValue; int? get followUpsOverdue; int? get followUpsDueToday; int? get createdInPeriod; int? get convertedInPeriod;// Percentage; null when createdInPeriod == 0 — null and 0 differ.
+ double? get conversionRate;
 /// Create a copy of LeadStatsSummaryDto
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -1783,6 +1794,7 @@ class _LeadStatsSummaryDto implements LeadStatsSummaryDto {
 @override final  int? followUpsDueToday;
 @override final  int? createdInPeriod;
 @override final  int? convertedInPeriod;
+// Percentage; null when createdInPeriod == 0 — null and 0 differ.
 @override final  double? conversionRate;
 
 /// Create a copy of LeadStatsSummaryDto

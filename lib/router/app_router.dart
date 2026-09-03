@@ -7,6 +7,7 @@ import '../core/icons/app_icon.dart';
 import '../features/auth/presentation/login_screen.dart';
 import '../features/auth/presentation/splash_screen.dart';
 import '../features/auth/providers/auth_controller.dart';
+import '../features/bookings/presentation/booking_convert_screen.dart';
 import '../features/bookings/presentation/booking_detail_screen.dart';
 import '../features/calendar/calendar.dart';
 import '../features/bookings/presentation/bookings_screen.dart';
@@ -24,6 +25,8 @@ import '../features/notifications/notifications.dart';
 import '../features/operations/presentation/operations_screen.dart';
 import '../features/payments/payments.dart';
 import '../features/profile/presentation/profile_screen.dart';
+import '../features/quotations/presentation/quotation_create_screen.dart';
+import '../features/quotations/presentation/quotation_edit_screen.dart';
 import '../features/quotations/presentation/quotation_preview_screen.dart';
 import '../features/quotations/presentation/quotations_screen.dart';
 import '../features/reports/reports.dart';
@@ -108,6 +111,15 @@ final routerProvider = Provider<GoRouter>((ref) {
         parentNavigatorKey: _rootKey,
         builder: (_, _) => const CustomersScreen(),
       ),
+      // Before `/bookings/:id`, or "convert" would be read as a booking id.
+      GoRoute(
+        path: Routes.bookingConvert,
+        parentNavigatorKey: _rootKey,
+        builder: (_, state) => BookingConvertScreen(
+          leadId: state.uri.queryParameters['leadId'] ?? '',
+          quotationId: state.uri.queryParameters['quotationId'],
+        ),
+      ),
       GoRoute(
         path: Routes.bookingDetail,
         parentNavigatorKey: _rootKey,
@@ -119,6 +131,16 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: Routes.quotations,
         parentNavigatorKey: _rootKey,
         builder: (_, _) => const QuotationsScreen(),
+      ),
+      // `/quotations/new?leadId=…`, matching the console's `/createquotation`.
+      // A quotation only exists against a lead — the server snapshots the
+      // customer from it — so without the parameter there is nothing to build.
+      GoRoute(
+        path: Routes.quotationCreate,
+        parentNavigatorKey: _rootKey,
+        builder: (_, state) => QuotationCreateScreen(
+          leadId: state.uri.queryParameters['leadId'] ?? '',
+        ),
       ),
       GoRoute(
         path: Routes.operations,
@@ -172,6 +194,13 @@ final routerProvider = Provider<GoRouter>((ref) {
         ),
       ),
       GoRoute(
+        path: Routes.quotationEdit,
+        parentNavigatorKey: _rootKey,
+        builder: (_, state) => QuotationEditScreen(
+          publicId: state.pathParameters['id'] ?? '',
+        ),
+      ),
+      GoRoute(
         path: Routes.customerDetail,
         parentNavigatorKey: _rootKey,
         builder: (_, state) => CustomerDetailScreen(
@@ -206,9 +235,6 @@ final routerProvider = Provider<GoRouter>((ref) {
 /// The 18 screens the backend cannot support yet. Each is a real route with
 /// real chrome — only the content is the "waiting on backend" panel.
 final _placeholders = <GoRoute>[
-  _placeholder(Routes.quotationCreate, 'New quotation', Ic.file, 'POST /api/quotations',
-      'The quotation builder — 11 service blocks and the pricing engine — is not '
-          'built yet. Existing quotations can be viewed and sent.'),
   _placeholder(Routes.itinerary, 'Itinerary', Ic.pin, 'GET /api/itineraries',
       'The lead itinerary is only destination, city and nights — there is no day plan.'),
 ];

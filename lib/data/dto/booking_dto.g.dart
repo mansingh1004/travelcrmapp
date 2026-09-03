@@ -35,7 +35,7 @@ _BookingDto _$BookingDtoFromJson(Map<String, dynamic> json) => _BookingDto(
   services:
       (json['services'] as List<dynamic>?)?.map((e) => e as String).toList() ??
       const <String>[],
-  tripSnapshot: json['tripSnapshot'] as String?,
+  tripSnapshot: readTripSummary(json, 'tripSnapshot') as String?,
   createdAt: json['createdAt'] as String?,
 );
 

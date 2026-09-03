@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$BookingDto {
 
- String? get publicId; String? get bookingCode; String? get customerId; String? get customerNameSnapshot; String? get destinationSnapshot; String? get sourceLeadPublicId; String? get sourceQuotationPublicId; String? get assignedUserId; String? get assignedUserName; String? get bookingDate; String? get travelDate; bool? get overseasTourPackage; num? get customerAmount; num? get vendorCost; String? get vendorPublicId; String? get vendorName; num? get gst; num? get tcs; num? get totalPayable; num? get paidAmount; num? get pendingAmount; num? get refundedAmount; num? get netProfit; String? get status; String? get paymentStatus; List<String> get services; String? get tripSnapshot; String? get createdAt;
+ String? get publicId; String? get bookingCode; String? get customerId; String? get customerNameSnapshot; String? get destinationSnapshot; String? get sourceLeadPublicId; String? get sourceQuotationPublicId; String? get assignedUserId; String? get assignedUserName; String? get bookingDate; String? get travelDate; bool? get overseasTourPackage; num? get customerAmount; num? get vendorCost; String? get vendorPublicId; String? get vendorName; num? get gst; num? get tcs; num? get totalPayable; num? get paidAmount; num? get pendingAmount; num? get refundedAmount; num? get netProfit; String? get status; String? get paymentStatus; List<String> get services;@JsonKey(readValue: readTripSummary) String? get tripSnapshot; String? get createdAt;
 /// Create a copy of BookingDto
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -48,7 +48,7 @@ abstract mixin class $BookingDtoCopyWith<$Res>  {
   factory $BookingDtoCopyWith(BookingDto value, $Res Function(BookingDto) _then) = _$BookingDtoCopyWithImpl;
 @useResult
 $Res call({
- String? publicId, String? bookingCode, String? customerId, String? customerNameSnapshot, String? destinationSnapshot, String? sourceLeadPublicId, String? sourceQuotationPublicId, String? assignedUserId, String? assignedUserName, String? bookingDate, String? travelDate, bool? overseasTourPackage, num? customerAmount, num? vendorCost, String? vendorPublicId, String? vendorName, num? gst, num? tcs, num? totalPayable, num? paidAmount, num? pendingAmount, num? refundedAmount, num? netProfit, String? status, String? paymentStatus, List<String> services, String? tripSnapshot, String? createdAt
+ String? publicId, String? bookingCode, String? customerId, String? customerNameSnapshot, String? destinationSnapshot, String? sourceLeadPublicId, String? sourceQuotationPublicId, String? assignedUserId, String? assignedUserName, String? bookingDate, String? travelDate, bool? overseasTourPackage, num? customerAmount, num? vendorCost, String? vendorPublicId, String? vendorName, num? gst, num? tcs, num? totalPayable, num? paidAmount, num? pendingAmount, num? refundedAmount, num? netProfit, String? status, String? paymentStatus, List<String> services,@JsonKey(readValue: readTripSummary) String? tripSnapshot, String? createdAt
 });
 
 
@@ -180,7 +180,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String? publicId,  String? bookingCode,  String? customerId,  String? customerNameSnapshot,  String? destinationSnapshot,  String? sourceLeadPublicId,  String? sourceQuotationPublicId,  String? assignedUserId,  String? assignedUserName,  String? bookingDate,  String? travelDate,  bool? overseasTourPackage,  num? customerAmount,  num? vendorCost,  String? vendorPublicId,  String? vendorName,  num? gst,  num? tcs,  num? totalPayable,  num? paidAmount,  num? pendingAmount,  num? refundedAmount,  num? netProfit,  String? status,  String? paymentStatus,  List<String> services,  String? tripSnapshot,  String? createdAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String? publicId,  String? bookingCode,  String? customerId,  String? customerNameSnapshot,  String? destinationSnapshot,  String? sourceLeadPublicId,  String? sourceQuotationPublicId,  String? assignedUserId,  String? assignedUserName,  String? bookingDate,  String? travelDate,  bool? overseasTourPackage,  num? customerAmount,  num? vendorCost,  String? vendorPublicId,  String? vendorName,  num? gst,  num? tcs,  num? totalPayable,  num? paidAmount,  num? pendingAmount,  num? refundedAmount,  num? netProfit,  String? status,  String? paymentStatus,  List<String> services, @JsonKey(readValue: readTripSummary)  String? tripSnapshot,  String? createdAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _BookingDto() when $default != null:
 return $default(_that.publicId,_that.bookingCode,_that.customerId,_that.customerNameSnapshot,_that.destinationSnapshot,_that.sourceLeadPublicId,_that.sourceQuotationPublicId,_that.assignedUserId,_that.assignedUserName,_that.bookingDate,_that.travelDate,_that.overseasTourPackage,_that.customerAmount,_that.vendorCost,_that.vendorPublicId,_that.vendorName,_that.gst,_that.tcs,_that.totalPayable,_that.paidAmount,_that.pendingAmount,_that.refundedAmount,_that.netProfit,_that.status,_that.paymentStatus,_that.services,_that.tripSnapshot,_that.createdAt);case _:
@@ -201,7 +201,7 @@ return $default(_that.publicId,_that.bookingCode,_that.customerId,_that.customer
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String? publicId,  String? bookingCode,  String? customerId,  String? customerNameSnapshot,  String? destinationSnapshot,  String? sourceLeadPublicId,  String? sourceQuotationPublicId,  String? assignedUserId,  String? assignedUserName,  String? bookingDate,  String? travelDate,  bool? overseasTourPackage,  num? customerAmount,  num? vendorCost,  String? vendorPublicId,  String? vendorName,  num? gst,  num? tcs,  num? totalPayable,  num? paidAmount,  num? pendingAmount,  num? refundedAmount,  num? netProfit,  String? status,  String? paymentStatus,  List<String> services,  String? tripSnapshot,  String? createdAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String? publicId,  String? bookingCode,  String? customerId,  String? customerNameSnapshot,  String? destinationSnapshot,  String? sourceLeadPublicId,  String? sourceQuotationPublicId,  String? assignedUserId,  String? assignedUserName,  String? bookingDate,  String? travelDate,  bool? overseasTourPackage,  num? customerAmount,  num? vendorCost,  String? vendorPublicId,  String? vendorName,  num? gst,  num? tcs,  num? totalPayable,  num? paidAmount,  num? pendingAmount,  num? refundedAmount,  num? netProfit,  String? status,  String? paymentStatus,  List<String> services, @JsonKey(readValue: readTripSummary)  String? tripSnapshot,  String? createdAt)  $default,) {final _that = this;
 switch (_that) {
 case _BookingDto():
 return $default(_that.publicId,_that.bookingCode,_that.customerId,_that.customerNameSnapshot,_that.destinationSnapshot,_that.sourceLeadPublicId,_that.sourceQuotationPublicId,_that.assignedUserId,_that.assignedUserName,_that.bookingDate,_that.travelDate,_that.overseasTourPackage,_that.customerAmount,_that.vendorCost,_that.vendorPublicId,_that.vendorName,_that.gst,_that.tcs,_that.totalPayable,_that.paidAmount,_that.pendingAmount,_that.refundedAmount,_that.netProfit,_that.status,_that.paymentStatus,_that.services,_that.tripSnapshot,_that.createdAt);case _:
@@ -221,7 +221,7 @@ return $default(_that.publicId,_that.bookingCode,_that.customerId,_that.customer
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String? publicId,  String? bookingCode,  String? customerId,  String? customerNameSnapshot,  String? destinationSnapshot,  String? sourceLeadPublicId,  String? sourceQuotationPublicId,  String? assignedUserId,  String? assignedUserName,  String? bookingDate,  String? travelDate,  bool? overseasTourPackage,  num? customerAmount,  num? vendorCost,  String? vendorPublicId,  String? vendorName,  num? gst,  num? tcs,  num? totalPayable,  num? paidAmount,  num? pendingAmount,  num? refundedAmount,  num? netProfit,  String? status,  String? paymentStatus,  List<String> services,  String? tripSnapshot,  String? createdAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String? publicId,  String? bookingCode,  String? customerId,  String? customerNameSnapshot,  String? destinationSnapshot,  String? sourceLeadPublicId,  String? sourceQuotationPublicId,  String? assignedUserId,  String? assignedUserName,  String? bookingDate,  String? travelDate,  bool? overseasTourPackage,  num? customerAmount,  num? vendorCost,  String? vendorPublicId,  String? vendorName,  num? gst,  num? tcs,  num? totalPayable,  num? paidAmount,  num? pendingAmount,  num? refundedAmount,  num? netProfit,  String? status,  String? paymentStatus,  List<String> services, @JsonKey(readValue: readTripSummary)  String? tripSnapshot,  String? createdAt)?  $default,) {final _that = this;
 switch (_that) {
 case _BookingDto() when $default != null:
 return $default(_that.publicId,_that.bookingCode,_that.customerId,_that.customerNameSnapshot,_that.destinationSnapshot,_that.sourceLeadPublicId,_that.sourceQuotationPublicId,_that.assignedUserId,_that.assignedUserName,_that.bookingDate,_that.travelDate,_that.overseasTourPackage,_that.customerAmount,_that.vendorCost,_that.vendorPublicId,_that.vendorName,_that.gst,_that.tcs,_that.totalPayable,_that.paidAmount,_that.pendingAmount,_that.refundedAmount,_that.netProfit,_that.status,_that.paymentStatus,_that.services,_that.tripSnapshot,_that.createdAt);case _:
@@ -236,7 +236,7 @@ return $default(_that.publicId,_that.bookingCode,_that.customerId,_that.customer
 @JsonSerializable()
 
 class _BookingDto implements BookingDto {
-  const _BookingDto({this.publicId, this.bookingCode, this.customerId, this.customerNameSnapshot, this.destinationSnapshot, this.sourceLeadPublicId, this.sourceQuotationPublicId, this.assignedUserId, this.assignedUserName, this.bookingDate, this.travelDate, this.overseasTourPackage, this.customerAmount, this.vendorCost, this.vendorPublicId, this.vendorName, this.gst, this.tcs, this.totalPayable, this.paidAmount, this.pendingAmount, this.refundedAmount, this.netProfit, this.status, this.paymentStatus, final  List<String> services = const <String>[], this.tripSnapshot, this.createdAt}): _services = services;
+  const _BookingDto({this.publicId, this.bookingCode, this.customerId, this.customerNameSnapshot, this.destinationSnapshot, this.sourceLeadPublicId, this.sourceQuotationPublicId, this.assignedUserId, this.assignedUserName, this.bookingDate, this.travelDate, this.overseasTourPackage, this.customerAmount, this.vendorCost, this.vendorPublicId, this.vendorName, this.gst, this.tcs, this.totalPayable, this.paidAmount, this.pendingAmount, this.refundedAmount, this.netProfit, this.status, this.paymentStatus, final  List<String> services = const <String>[], @JsonKey(readValue: readTripSummary) this.tripSnapshot, this.createdAt}): _services = services;
   factory _BookingDto.fromJson(Map<String, dynamic> json) => _$BookingDtoFromJson(json);
 
 @override final  String? publicId;
@@ -271,7 +271,7 @@ class _BookingDto implements BookingDto {
   return EqualUnmodifiableListView(_services);
 }
 
-@override final  String? tripSnapshot;
+@override@JsonKey(readValue: readTripSummary) final  String? tripSnapshot;
 @override final  String? createdAt;
 
 /// Create a copy of BookingDto
@@ -307,7 +307,7 @@ abstract mixin class _$BookingDtoCopyWith<$Res> implements $BookingDtoCopyWith<$
   factory _$BookingDtoCopyWith(_BookingDto value, $Res Function(_BookingDto) _then) = __$BookingDtoCopyWithImpl;
 @override @useResult
 $Res call({
- String? publicId, String? bookingCode, String? customerId, String? customerNameSnapshot, String? destinationSnapshot, String? sourceLeadPublicId, String? sourceQuotationPublicId, String? assignedUserId, String? assignedUserName, String? bookingDate, String? travelDate, bool? overseasTourPackage, num? customerAmount, num? vendorCost, String? vendorPublicId, String? vendorName, num? gst, num? tcs, num? totalPayable, num? paidAmount, num? pendingAmount, num? refundedAmount, num? netProfit, String? status, String? paymentStatus, List<String> services, String? tripSnapshot, String? createdAt
+ String? publicId, String? bookingCode, String? customerId, String? customerNameSnapshot, String? destinationSnapshot, String? sourceLeadPublicId, String? sourceQuotationPublicId, String? assignedUserId, String? assignedUserName, String? bookingDate, String? travelDate, bool? overseasTourPackage, num? customerAmount, num? vendorCost, String? vendorPublicId, String? vendorName, num? gst, num? tcs, num? totalPayable, num? paidAmount, num? pendingAmount, num? refundedAmount, num? netProfit, String? status, String? paymentStatus, List<String> services,@JsonKey(readValue: readTripSummary) String? tripSnapshot, String? createdAt
 });
 
 
@@ -365,7 +365,8 @@ as String?,
 /// @nodoc
 mixin _$BookingStatsDto {
 
- int? get totalBookings; int? get confirmedBookings; int? get pendingBookings; int? get cancelledBookings; int? get completedBookings; int? get refundedBookings; num? get totalRevenue; num? get totalCollected; num? get totalPending; num? get totalRefundAmount; num? get netProfit; num? get totalVendorCost;
+ int? get totalBookings; int? get confirmedBookings; int? get pendingBookings; int? get cancelledBookings; int? get completedBookings; int? get refundedBookings; num? get totalRevenue; num? get totalCollected; num? get totalPending; num? get totalRefundAmount;// Only present with the profit-read permission.
+ num? get netProfit; num? get totalVendorCost;
 /// Create a copy of BookingStatsDto
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -583,6 +584,7 @@ class _BookingStatsDto implements BookingStatsDto {
 @override final  num? totalCollected;
 @override final  num? totalPending;
 @override final  num? totalRefundAmount;
+// Only present with the profit-read permission.
 @override final  num? netProfit;
 @override final  num? totalVendorCost;
 

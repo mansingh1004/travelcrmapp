@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/constants/status_colors.dart';
@@ -11,6 +12,7 @@ import '../../../core/formatters/inr.dart';
 import '../../../core/icons/app_icon.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../domain/entities/quotation.dart';
+import '../../../router/routes.dart';
 import '../../../domain/entities/quotation_enums.dart';
 import '../../../widgets/app_card.dart';
 import '../../../widgets/app_toast.dart';
@@ -49,19 +51,23 @@ class QuotationPreviewScreen extends ConsumerWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text('Quotation preview', style: AppType.h2),
-            Text(
-              switch (async) {
-                AsyncData(:final value) => [
-                    if (value.quoteNo != null) 'QT-${value.quoteNo}',
-                    if (value.version != null) 'v${value.version}',
-                  ].join(' · '),
-                _ => 'Loading…',
-              },
-              style: AppType.monoSm.copyWith(color: AppColors.faint),
-            ),
+            Text(switch (async) {
+              AsyncData(:final value) => [
+                if (value.quoteNo != null) 'QT-${value.quoteNo}',
+                if (value.version != null) 'v${value.version}',
+              ].join(' · '),
+              _ => 'Loading…',
+            }, style: AppType.monoSm.copyWith(color: AppColors.faint)),
           ],
         ),
         actions: [
+          if (async.value != null)
+            IconButton(
+              onPressed: () =>
+                  context.push(Routes.quotationEditFor(async.value!.id)),
+              icon: const AppIcon(Ic.edit, size: 18, color: AppColors.body),
+              tooltip: 'Edit services',
+            ),
           if (async.value != null)
             IconButton(
               onPressed: () => _copyShareLink(context, ref, async.value!.id),
@@ -80,16 +86,17 @@ class QuotationPreviewScreen extends ConsumerWidget {
       body: switch (async) {
         AsyncLoading() => const SkeletonList(itemCount: 3, itemHeight: 160),
         AsyncError(:final error) => ErrorStateView(
-            failure: asFailure(error),
-            onRetry: () => ref.invalidate(quotationDetailProvider(publicId)),
-          ),
+          failure: asFailure(error),
+          onRetry: () => ref.invalidate(quotationDetailProvider(publicId)),
+        ),
         AsyncData(:final value) => _Preview(quotation: value),
       },
       // The two things an agent actually does with a quotation stay pinned to
       // the thumb, so they are reachable without scrolling past the whole
       // document to find them.
-      bottomNavigationBar:
-          async.value == null ? null : _SendBar(quotation: async.value!),
+      bottomNavigationBar: async.value == null
+          ? null
+          : _SendBar(quotation: async.value!),
     );
   }
 }
@@ -106,7 +113,8 @@ class _Preview extends ConsumerWidget {
 
     return RefreshIndicator(
       color: AppColors.primary,
-      onRefresh: () async => ref.invalidate(quotationDetailProvider(quotation.id)),
+      onRefresh: () async =>
+          ref.invalidate(quotationDetailProvider(quotation.id)),
       child: ListView(
         padding: const EdgeInsets.all(AppSpacing.gutter),
         children: [
@@ -121,7 +129,8 @@ class _Preview extends ConsumerWidget {
             const SizedBox(height: AppSpacing.x12),
             _StayCard(stays: quotation.hotels),
           ],
-          if (quotation.vehicles.isNotEmpty || quotation.flights.isNotEmpty) ...[
+          if (quotation.vehicles.isNotEmpty ||
+              quotation.flights.isNotEmpty) ...[
             const SizedBox(height: AppSpacing.x12),
             _TransportCard(
               vehicles: quotation.vehicles,
@@ -216,8 +225,8 @@ class _HeroCard extends ConsumerWidget {
     final headline = customer?.destination?.trim().isNotEmpty ?? false
         ? customer!.destination!
         : quotation.title?.trim().isNotEmpty ?? false
-            ? quotation.title!
-            : 'Travel quotation';
+        ? quotation.title!
+        : 'Travel quotation';
 
     final duration = quotation.durationLabel;
     final cities = quotation.hotels
@@ -246,7 +255,11 @@ class _HeroCard extends ConsumerWidget {
                   color: AppColors.primary,
                   borderRadius: BorderRadius.circular(AppRadii.chip),
                 ),
-                child: const AppIcon(Ic.plane, size: 13, color: AppColors.onPrimary),
+                child: const AppIcon(
+                  Ic.plane,
+                  size: 13,
+                  color: AppColors.onPrimary,
+                ),
               ),
               const SizedBox(width: AppSpacing.x8),
               Expanded(
@@ -350,7 +363,10 @@ class _StatusRow extends StatelessWidget {
           palette: StatusColors.neutral,
         ),
         if (quotation.createdBy != null)
-          StatusChip(label: 'By ${quotation.createdBy}', palette: StatusColors.neutral),
+          StatusChip(
+            label: 'By ${quotation.createdBy}',
+            palette: StatusColors.neutral,
+          ),
         if (quotation.createdAt != null)
           StatusChip(
             label: AppDate.display(quotation.createdAt),
@@ -379,8 +395,9 @@ class _StageChipPicker extends ConsumerWidget {
         borderRadius: BorderRadius.circular(AppRadii.chip),
         child: StatusChip(
           label: stage?.label ?? 'Set stage',
-          palette:
-              stage == null ? StatusColors.neutral : StatusColors.quotationStage(stage),
+          palette: stage == null
+              ? StatusColors.neutral
+              : StatusColors.quotationStage(stage),
           trailingIcon: Ic.chevronDown,
         ),
       ),
@@ -413,7 +430,11 @@ class _StageChipPicker extends ConsumerWidget {
                 ),
                 title: Text(stage.label, style: AppType.fieldValue),
                 trailing: stage == quotation.stage
-                    ? const AppIcon(Ic.check, size: 18, color: AppColors.primary)
+                    ? const AppIcon(
+                        Ic.check,
+                        size: 18,
+                        color: AppColors.primary,
+                      )
                     : null,
               ),
             const SizedBox(height: AppSpacing.x8),
@@ -425,14 +446,22 @@ class _StageChipPicker extends ConsumerWidget {
     if (picked == null || picked == quotation.stage || !context.mounted) return;
 
     try {
-      await ref.read(quotationRepositoryProvider).changeStage(quotation.id, picked);
+      await ref
+          .read(quotationRepositoryProvider)
+          .changeStage(quotation.id, picked);
       ref.invalidate(quotationDetailProvider(quotation.id));
       ref.invalidate(quotationsControllerProvider);
       if (context.mounted) {
-        AppToast.show(context, title: 'Stage updated', message: 'Now ${picked.label}.');
+        AppToast.show(
+          context,
+          title: 'Stage updated',
+          message: 'Now ${picked.label}.',
+        );
       }
     } on Failure catch (f) {
-      if (context.mounted) AppToast.error(context, 'Could not update stage', f.message);
+      if (context.mounted) {
+        AppToast.error(context, 'Could not update stage', f.message);
+      }
     }
   }
 }
@@ -440,25 +469,42 @@ class _StageChipPicker extends ConsumerWidget {
 /// Opens the server-rendered PDF. The app never draws a second document of its
 /// own — a locally composed one could disagree with what the customer receives.
 Future<void> _openPdf(BuildContext context, String url) async {
-  final ok = await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+  final ok = await launchUrl(
+    Uri.parse(url),
+    mode: LaunchMode.externalApplication,
+  );
   if (!ok && context.mounted) {
-    AppToast.error(context, 'Could not open', 'No app available to open the PDF.');
+    AppToast.error(
+      context,
+      'Could not open',
+      'No app available to open the PDF.',
+    );
   }
 }
 
 /// Copies the quotation's public link, when the server has minted one.
-Future<void> _copyShareLink(BuildContext context, WidgetRef ref, String id) async {
+Future<void> _copyShareLink(
+  BuildContext context,
+  WidgetRef ref,
+  String id,
+) async {
   try {
     final link = await ref.read(quotationRepositoryProvider).getShareLink(id);
     if (!context.mounted) return;
     if (link == null) {
-      AppToast.error(context, 'No share link', 'This quotation has no public link yet.');
+      AppToast.error(
+        context,
+        'No share link',
+        'This quotation has no public link yet.',
+      );
       return;
     }
     await Clipboard.setData(ClipboardData(text: link));
     if (context.mounted) AppToast.success(context, 'Link copied', link);
   } on Failure catch (f) {
-    if (context.mounted) AppToast.error(context, 'Could not get link', f.message);
+    if (context.mounted) {
+      AppToast.error(context, 'Could not get link', f.message);
+    }
   }
 }
 
@@ -500,26 +546,56 @@ class _SendBarState extends ConsumerState<_SendBar> {
             AppSpacing.gutter,
             AppSpacing.x10,
           ),
-          child: Row(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Expanded(
-                child: _SendButton(
-                  icon: Ic.wa,
-                  label: 'Send WhatsApp',
-                  background: AppColors.success,
-                  busy: _sendingWhatsApp == true,
-                  onPressed: busy ? null : () => _send(whatsApp: true),
+              // The step after the customer says yes. It only appears when the
+              // quotation knows its lead, because the conversion is a
+              // lead-centric route — `POST /api/leads/{id}/convert-to-booking`.
+              if (widget.quotation.leadId != null) ...[
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: busy
+                        ? null
+                        : () => context.push(
+                            Routes.bookingConvertFor(
+                              widget.quotation.leadId!,
+                              quotationId: widget.quotation.id,
+                            ),
+                          ),
+                    icon: const AppIcon(
+                      Ic.package,
+                      size: 16,
+                      color: AppColors.primary,
+                    ),
+                    label: const Text('Convert to booking'),
+                  ),
                 ),
-              ),
-              const SizedBox(width: AppSpacing.x10),
-              Expanded(
-                child: _SendButton(
-                  icon: Ic.send,
-                  label: 'Email quote',
-                  background: AppColors.primary,
-                  busy: _sendingWhatsApp == false,
-                  onPressed: busy ? null : () => _send(whatsApp: false),
-                ),
+                const SizedBox(height: AppSpacing.x10),
+              ],
+              Row(
+                children: [
+                  Expanded(
+                    child: _SendButton(
+                      icon: Ic.wa,
+                      label: 'Send WhatsApp',
+                      background: AppColors.success,
+                      busy: _sendingWhatsApp == true,
+                      onPressed: busy ? null : () => _send(whatsApp: true),
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.x10),
+                  Expanded(
+                    child: _SendButton(
+                      icon: Ic.send,
+                      label: 'Email quote',
+                      background: AppColors.primary,
+                      busy: _sendingWhatsApp == false,
+                      onPressed: busy ? null : () => _send(whatsApp: false),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -585,7 +661,10 @@ class _SendButton extends StatelessWidget {
             const SizedBox(
               width: 16,
               height: 16,
-              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: Colors.white,
+              ),
             )
           else
             AppIcon(icon, size: 16, color: Colors.white),
@@ -621,7 +700,8 @@ class _PriceCard extends StatelessWidget {
           _Row(label: 'Subtotal', value: Inr.format(totals.subtotal)),
           if (totals.addonsTotal > 0)
             _Row(label: 'Add-ons', value: Inr.format(totals.addonsTotal)),
-          if (totals.markup > 0) _Row(label: 'Markup', value: Inr.format(totals.markup)),
+          if (totals.markup > 0)
+            _Row(label: 'Markup', value: Inr.format(totals.markup)),
           if (totals.discountAmount > 0)
             _Row(
               label: totals.discountType == '%'
@@ -734,7 +814,6 @@ class _ListCard extends StatelessWidget {
     );
   }
 }
-
 
 /// The day-wise plan, from the quotation's sightseeing block.
 class _DayPlanCard extends StatelessWidget {
@@ -928,7 +1007,8 @@ class _TransportCard extends StatelessWidget {
               subtitle: [
                 if (flight.carrier != null) flight.carrier!,
                 if (flight.cabinClass != null) flight.cabinClass!,
-                if (flight.departure != null) AppDate.displayShort(flight.departure),
+                if (flight.departure != null)
+                  AppDate.displayShort(flight.departure),
                 if (flight.departureTime != null) flight.departureTime!,
               ].join(' · '),
             ),
@@ -1009,7 +1089,11 @@ class _InclusionChips extends StatelessWidget {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const AppIcon(Ic.check, size: 11, color: AppColors.success),
+                      const AppIcon(
+                        Ic.check,
+                        size: 11,
+                        color: AppColors.success,
+                      ),
                       const SizedBox(width: AppSpacing.x4),
                       Text(
                         item,

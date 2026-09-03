@@ -135,6 +135,8 @@ _LeadItineraryDto _$LeadItineraryDtoFromJson(Map<String, dynamic> json) =>
       city: json['city'] as String?,
       nights: (json['nights'] as num?)?.toInt(),
       dayNumber: (json['dayNumber'] as num?)?.toInt(),
+      destinationId: (json['destinationId'] as num?)?.toInt(),
+      cityId: (json['cityId'] as num?)?.toInt(),
     );
 
 Map<String, dynamic> _$LeadItineraryDtoToJson(_LeadItineraryDto instance) =>
@@ -144,6 +146,8 @@ Map<String, dynamic> _$LeadItineraryDtoToJson(_LeadItineraryDto instance) =>
       'city': instance.city,
       'nights': instance.nights,
       'dayNumber': instance.dayNumber,
+      'destinationId': instance.destinationId,
+      'cityId': instance.cityId,
     };
 
 _LeadLogDto _$LeadLogDtoFromJson(Map<String, dynamic> json) => _LeadLogDto(

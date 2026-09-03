@@ -396,6 +396,41 @@ class MastersApi {
   Future<List<DropdownOption>> getCities(int destinationId) =>
       _dropdown('/api/masters/dropdown/cities?destinationId=$destinationId');
 
+  // ── Dropdowns a quotation line picks from ──────────────────────────────
+
+  /// `GET /api/masters/dropdown/hotels` — every hotel the tenant can quote,
+  /// including the platform-synced ones, which are perfectly usable on a
+  /// quotation even though the tenant cannot edit the catalog row.
+  Future<List<DropdownOption>> getQuoteHotels({int? destinationId}) =>
+      _dropdown(
+        destinationId == null
+            ? '/api/masters/dropdown/hotels'
+            : '/api/masters/dropdown/hotels?destinationId=$destinationId',
+      );
+
+  /// `GET /api/masters/dropdown/room-types?hotelId=` — `hotelId` is required.
+  Future<List<DropdownOption>> getRoomTypes(int hotelId) =>
+      _dropdown('/api/masters/dropdown/room-types?hotelId=$hotelId');
+
+  /// `GET /api/masters/dropdown/meal-plans?hotelId=` — `hotelId` is required.
+  Future<List<DropdownOption>> getMealPlans(int hotelId) =>
+      _dropdown('/api/masters/dropdown/meal-plans?hotelId=$hotelId');
+
+  /// `GET /api/masters/dropdown/sightseeings?destinationId=`.
+  Future<List<DropdownOption>> getQuoteSightseeings({int? destinationId}) =>
+      _dropdown(
+        destinationId == null
+            ? '/api/masters/dropdown/sightseeings'
+            : '/api/masters/dropdown/sightseeings?destinationId=$destinationId',
+      );
+
+  /// `GET /api/masters/dropdown/vehicles`.
+  ///
+  /// Takes no filter, and cannot: the vehicle master carries no city or
+  /// destination, so a quotation for Mumbai still sees every vehicle.
+  Future<List<DropdownOption>> getQuoteVehicles() =>
+      _dropdown('/api/masters/dropdown/vehicles');
+
   Future<List<DropdownOption>> _dropdown(String path) async {
     try {
       final response = await _dio.get<dynamic>(path);

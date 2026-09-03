@@ -3,6 +3,36 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'booking_dto.freezed.dart';
 part 'booking_dto.g.dart';
 
+/// Reads `tripSnapshot` into the one line the booking screen shows.
+///
+/// The field is a **`TripSnapshotResponse` object**, not a string — traveller,
+/// departure and itinerary detail — and reading it straight into a `String?`
+/// throws a `TypeError` out of the generated `fromJson`. It went unnoticed
+/// because the seeded bookings carry no snapshot; converting a lead is the
+/// first path that fills one, and the whole response then failed to parse
+/// after the booking had already been created.
+///
+/// A short route line is built from the itinerary legs (`Goa → Manali`)
+/// because that is all the screen has room for. A plain string is still
+/// accepted, in case an older row holds one.
+Object? readTripSummary(Map<dynamic, dynamic> json, String key) {
+  final value = json[key];
+  if (value is String) return value;
+  if (value is! Map) return null;
+
+  final legs = value['itinerary'];
+  if (legs is! List || legs.isEmpty) return value['packageType'];
+
+  final stops = <String>[];
+  for (final leg in legs.whereType<Map>()) {
+    final city = leg['city'] ?? leg['destination'];
+    if (city is String && city.isNotEmpty && !stops.contains(city)) {
+      stops.add(city);
+    }
+  }
+  return stops.isEmpty ? value['packageType'] : stops.join(' → ');
+}
+
 /// Wire model for `booking/dto/BookingResponseDTO`.
 ///
 /// Every money figure here is **server-derived** — `gst`, `tcs`,
@@ -40,7 +70,7 @@ abstract class BookingDto with _$BookingDto {
     String? status,
     String? paymentStatus,
     @Default(<String>[]) List<String> services,
-    String? tripSnapshot,
+    @JsonKey(readValue: readTripSummary) String? tripSnapshot,
     String? createdAt,
   }) = _BookingDto;
 

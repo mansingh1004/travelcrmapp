@@ -146,7 +146,7 @@ class LeadCard extends StatelessWidget {
               _ActionButton(
                 icon: Ic.file,
                 label: 'New quotation for ${lead.customerName}',
-                onTap: () => context.push(Routes.quotationCreate),
+                onTap: () => context.push('${Routes.quotationCreate}?leadId=${lead.id}'),
               ),
               const SizedBox(width: AppSpacing.x4),
               _ActionButton(

@@ -56,6 +56,7 @@ abstract final class LeadMapper {
                 destination: i.destination?.trim() ?? '',
                 city: i.city?.trim() ?? '',
                 nights: i.nights ?? 0,
+                destinationId: i.destinationId,
               ),
             )
             .toList(growable: false),

@@ -191,10 +191,23 @@ class ComingSoonView extends StatelessWidget {
 
 /// Shimmering placeholder rows, matching the prototype's `tcSkel` pulse.
 class SkeletonList extends StatefulWidget {
-  const SkeletonList({super.key, this.itemCount = 5, this.itemHeight = 104});
+  const SkeletonList({
+    super.key,
+    this.itemCount = 5,
+    this.itemHeight = 104,
+    this.shrinkWrap = false,
+  });
 
   final int itemCount;
   final double itemHeight;
+
+  /// Set when this sits **inside** another scrollable.
+  ///
+  /// A `ListView` handed unbounded height throws "RenderBox was not laid out",
+  /// which is what happens the moment one of these is dropped into another
+  /// list's children. Shrink-wrapping sizes it to its items and hands the
+  /// scrolling back to the parent.
+  final bool shrinkWrap;
 
   @override
   State<SkeletonList> createState() => _SkeletonListState();
@@ -215,7 +228,11 @@ class _SkeletonListState extends State<SkeletonList> with SingleTickerProviderSt
   @override
   Widget build(BuildContext context) {
     return ListView.separated(
-      padding: const EdgeInsets.all(AppSpacing.gutter),
+      shrinkWrap: widget.shrinkWrap,
+      physics: widget.shrinkWrap ? const NeverScrollableScrollPhysics() : null,
+      padding: widget.shrinkWrap
+          ? EdgeInsets.zero
+          : const EdgeInsets.all(AppSpacing.gutter),
       itemCount: widget.itemCount,
       separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.x12),
       itemBuilder: (_, _) => FadeTransition(

@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 
+import '../../core/errors/failure.dart';
 import '../dto/envelopes.dart';
 import '../dto/quotation_dto.dart';
 import '../remote/failure_mapper.dart';
@@ -146,6 +147,89 @@ class QuotationApi {
     }
   }
 
+  // ── Editing a draft's services ─────────────────────────────────────────
+  //
+  // `PUT /api/quotations/{publicId}` takes the **whole** document:
+  // `quotationMapper.applyRequest` re-maps every section, so anything left out
+  // of the body is wiped. There is no partial update. The editor therefore
+  // reads the quotation as raw JSON, changes only the rows it owns, and sends
+  // the rest back untouched.
+  //
+  // That round trip is safe because `QuotationResponseDto`'s section items are
+  // field-for-field identical to `QuotationRequestDto`'s — same names, same
+  // nesting — so a row that came out goes back in unchanged.
+
+  /// `GET /api/quotations/{publicId}`, as the raw `data` map.
+  ///
+  /// Deliberately not the typed DTO: the editor has to hand back sections it
+  /// does not understand (flights, cruises, add-ons) exactly as they arrived,
+  /// and a typed model would quietly drop every field it has no place for.
+  Future<Map<String, dynamic>> getQuotationRaw(String publicId) async {
+    try {
+      final response = await _dio.get<dynamic>('/api/quotations/$publicId');
+      final body = response.data;
+      if (body is! Map<String, dynamic> || body['data'] is! Map) {
+        throw const ParseFailure(cause: 'Quotation response had no data object');
+      }
+      return Map<String, dynamic>.from(body['data'] as Map);
+    } on DioException catch (e) {
+      throw FailureMapper.from(e);
+    }
+  }
+
+  /// `PUT /api/quotations/{publicId}` with a body built by [editableDocument].
+  Future<void> updateQuotationRaw(
+    String publicId,
+    Map<String, dynamic> body,
+  ) async {
+    try {
+      await _dio.put<dynamic>('/api/quotations/$publicId', data: body);
+    } on DioException catch (e) {
+      throw FailureMapper.from(e);
+    }
+  }
+
+  /// Narrows a fetched quotation to the keys `QuotationRequestDto` accepts.
+  ///
+  /// An allowlist rather than a blocklist: the response also carries computed
+  /// and read-only fields — `totals`, `customer`, `quoteNo`, `nights`, `days`,
+  /// `rooms`, `allowedServices`, `pdfUrl`, `createdBy`, timestamps — and
+  /// sending those back is at best ignored and at worst confusing to read in a
+  /// request log.
+  ///
+  /// `pricing` is kept and `totals` dropped on purpose: the client states the
+  /// discount, tax and markup it wants, and the server computes every total
+  /// from them. Money is never calculated here.
+  static Map<String, dynamic> editableDocument(Map<String, dynamic> raw) {
+    const keys = [
+      'leadId',
+      'destinationId',
+      'title',
+      'quotationStage',
+      'templateStyle',
+      'includeSignature',
+      'includeStamp',
+      'coverImageUrl',
+      'notes',
+      'flight',
+      'hotel',
+      'sightseeing',
+      'cruise',
+      'vehicle',
+      'addons',
+      'inclusions',
+      'exclusions',
+      'paymentPolicies',
+      'cancellationPolicies',
+      'bookingTerms',
+      'pricing',
+    ];
+    return <String, dynamic>{
+      for (final key in keys)
+        if (raw.containsKey(key) && raw[key] != null) key: raw[key],
+    };
+  }
+
   // ── Starting a quotation from a lead ───────────────────────────────────
   //
   // The desktop console's `/createquotation?leadId=…` opens a builder with the
@@ -196,6 +280,25 @@ class QuotationApi {
           if (title != null && title.trim().isNotEmpty) 'title': title.trim(),
         },
       );
+      final envelope = ApiEnvelope.from<QuotationDto>(
+        response.data,
+        (data) => QuotationDto.fromJson(data! as Map<String, dynamic>),
+      );
+      return envelope.requireData();
+    } on DioException catch (e) {
+      throw FailureMapper.from(e);
+    }
+  }
+
+  /// `POST /api/quotations` with a body the caller built — the whole document
+  /// in one call, sections and all.
+  ///
+  /// The server still does the pre-fill: `linkLeadAndSnapshot` copies the
+  /// customer, pax, travel date and destination off the lead, so the body only
+  /// carries what the agent chose.
+  Future<QuotationDto> createQuotationRaw(Map<String, dynamic> body) async {
+    try {
+      final response = await _dio.post<dynamic>('/api/quotations', data: body);
       final envelope = ApiEnvelope.from<QuotationDto>(
         response.data,
         (data) => QuotationDto.fromJson(data! as Map<String, dynamic>),

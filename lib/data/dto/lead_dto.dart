@@ -99,6 +99,10 @@ abstract class LeadItineraryDto with _$LeadItineraryDto {
     String? city,
     int? nights,
     int? dayNumber,
+    /// The geography ids behind the two names above. A quotation needs the
+    /// destination id to filter the hotel and sightseeing masters by it.
+    int? destinationId,
+    int? cityId,
   }) = _LeadItineraryDto;
 
   factory LeadItineraryDto.fromJson(Map<String, dynamic> json) => _$LeadItineraryDtoFromJson(json);

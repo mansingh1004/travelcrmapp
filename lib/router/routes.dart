@@ -27,8 +27,10 @@ abstract final class Routes {
   static const quotations = '/quotations';
   static const quotationCreate = '/quotations/new';
   static const quotationPreview = '/quotations/:id/preview';
+  static const quotationEdit = '/quotations/:id/edit';
   static const itinerary = '/itinerary';
   static const bookingDetail = '/bookings/:id';
+  static const bookingConvert = '/bookings/convert';
 
   // ── Operations ─────────────────────────────────────────────────────────
   static const operations = '/operations';
@@ -57,7 +59,13 @@ abstract final class Routes {
 
   static String bookingDetailFor(String publicId) => '/bookings/$publicId';
 
+  static String bookingConvertFor(String leadId, {String? quotationId}) =>
+      '/bookings/convert?leadId=$leadId'
+      '${quotationId == null ? '' : '&quotationId=$quotationId'}';
+
   static String quotationPreviewFor(String publicId) => '/quotations/$publicId/preview';
+
+  static String quotationEditFor(String publicId) => '/quotations/$publicId/edit';
 
   static String operationsDetailFor(String bookingPublicId) =>
       '/operations/$bookingPublicId';
