@@ -162,6 +162,34 @@ void main() {
       expect(overridden.containsKey('gstInclusive'), isFalse);
     });
 
+    test('sends the vendor as an id, not the name shown in the picker', () {
+      final body = buildConversionBody(
+        customerName: 'rahul',
+        destination: 'mumbai',
+        travelDate: DateTime(2026, 10, 1),
+        vendorId: 'd5c1a138-de69-45a5-b17a-f5d280ade02b',
+        vendorCost: 30000,
+      );
+
+      expect(body['vendorPublicId'], 'd5c1a138-de69-45a5-b17a-f5d280ade02b');
+      expect(body['vendorCost'], 30000);
+    });
+
+    test('leaves the vendor out when none is arranged yet', () {
+      // Both are optional, and a booking is routinely taken before the vendor
+      // is chosen — sending an empty id would be a lie about the arrangement.
+      final body = buildConversionBody(
+        customerName: 'rahul',
+        destination: 'mumbai',
+        travelDate: DateTime(2026, 10, 1),
+        vendorId: '',
+        vendorCost: 0,
+      );
+
+      expect(body.containsKey('vendorPublicId'), isFalse);
+      expect(body.containsKey('vendorCost'), isFalse);
+    });
+
     test('omits money that was left blank', () {
       // `customerAmount` is optional on purpose: the backend notes that "a
       // booking is routinely taken before the money is settled".
@@ -206,6 +234,26 @@ void main() {
       expect(financials.totalPayable, 55000.00);
       expect(financials.pendingAmount, 45000.00);
       expect(financials.paymentStatus, 'PARTIAL');
+    });
+
+    test('sends the vendor cost, which is what makes the profit mean anything',
+        () async {
+      // Live, on ₹50,000: with no vendorCost the server returns netProfit
+      // 50,000 — the entire amount — and with 30,000 it returns 20,000. The
+      // screen therefore hides the profit line until a cost is entered rather
+      // than showing a margin the agency is not making.
+      final adapter = _CapturingAdapter(
+        '{"success":true,"data":{"customerAmount":50000.00,'
+        '"totalPayable":55000.00,"netProfit":20000.00}}',
+      );
+      final financials = await BookingApi(_dio(adapter)).previewFinancials(
+        customerAmount: 50000,
+        vendorCost: 30000,
+      );
+
+      final body = adapter.captured!.data! as Map<String, dynamic>;
+      expect(body['vendorCost'], 30000);
+      expect(financials.netProfit, 20000.00);
     });
 
     test('reads the derived base back under inclusive pricing', () async {

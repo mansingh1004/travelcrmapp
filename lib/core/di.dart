@@ -17,6 +17,7 @@ import '../data/services/company_api.dart';
 import '../data/services/customer_api.dart';
 import '../data/services/lead_api.dart';
 import '../features/masters/masters.dart';
+import '../features/vendors/api/vendor_api.dart';
 import '../features/notifications/notifications.dart';
 import '../data/services/operations_api.dart';
 import '../features/payments/payments.dart';
@@ -83,6 +84,11 @@ final notificationApiProvider =
 
 final mastersApiProvider =
     Provider<MastersApi>((ref) => MastersApi(ref.watch(dioProvider)));
+
+/// Suppliers. Their own service, not part of the masters: vendors carry a
+/// ledger and their own VENDOR_* permissions.
+final vendorApiProvider =
+    Provider<VendorApi>((ref) => VendorApi(ref.watch(dioProvider)));
 
 final taskApiProvider =
     Provider<TaskApi>((ref) => TaskApi(ref.watch(dioProvider)));

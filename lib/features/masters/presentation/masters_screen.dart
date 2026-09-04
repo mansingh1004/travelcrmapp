@@ -56,12 +56,15 @@ final masterRowsProvider = FutureProvider.autoDispose<List<MasterRow>>((ref) asy
   return page.content;
 });
 
-/// Masters — the hotel, vehicle, sightseeing and vendor catalogs.
+/// Masters — the hotel, vehicle and sightseeing catalogs.
 ///
-/// The tenant keeps its own **hotels, vehicles and sightseeing** here: add,
-/// edit and delete. **Vendors are browse-only** — that catalog carries
-/// commercial terms, documents and ledger links that belong on the desktop
-/// console, not on a phone.
+/// All three are the tenant's own to maintain here: add, edit and delete, plus
+/// destinations and cities behind the pin in the app bar.
+///
+/// **Vendors are not here.** They used to be a fourth tab, but a vendor is a
+/// relationship with a ledger rather than a catalog row — its own outstanding
+/// balance, its own lifecycle and its own VENDOR_* permissions — so it now has
+/// a feature of its own, exactly as the desktop console arranges it.
 ///
 /// Rows that belong to the platform rather than the tenant — a hotel synced
 /// from the Marketplace, a vehicle shared across tenants — appear in the lists
@@ -108,7 +111,6 @@ class _MastersScreenState extends ConsumerState<MastersScreen> {
             ),
             icon: const AppIcon(Ic.pin, size: 18, color: AppColors.body),
           ),
-          // Vendors are the one catalog this app does not write to.
           if (_writable(kind))
             TextButton.icon(
               onPressed: () => _add(context, ref, kind),
@@ -233,7 +235,6 @@ class _MastersScreenState extends ConsumerState<MastersScreen> {
                                   MasterKind.hotels => Ic.bed,
                                   MasterKind.vehicles => Ic.car,
                                   MasterKind.sightseeing => Ic.pin,
-                                  MasterKind.vendors => Ic.grid,
                                 },
                                 title: 'No ${kind.label.toLowerCase()}',
                                 message: _writable(kind)
@@ -269,9 +270,11 @@ class _MastersScreenState extends ConsumerState<MastersScreen> {
 /// Whether this app writes to a catalog at all.
 ///
 /// Hotels, vehicles and sightseeing are the tenant's own. Vendors are not
-/// edited here — the catalog carries commercial terms, documents and ledger
-/// links that belong on the desktop console.
-bool _writable(MasterKind kind) => kind != MasterKind.vendors;
+/// Every catalog on this screen is now the tenant's own to maintain. Vendors
+/// used to be the exception and have moved out to their own feature: they
+/// carry a ledger and their own VENDOR_* permissions, so they were never a
+/// catalog in the first place.
+bool _writable(MasterKind kind) => true;
 
 /// Opens the create sheet for the current tab, and refreshes on save.
 Future<void> _add(BuildContext context, WidgetRef ref, MasterKind kind) async {
@@ -318,13 +321,12 @@ Future<void> _edit(
       MasterKind.hotels => await api.getHotel(row.numericId!),
       MasterKind.vehicles => await api.getVehicle(row.id),
       MasterKind.sightseeing => await api.getSightseeing(row.numericId!),
-      MasterKind.vendors => null,
     };
   } on Failure catch (f) {
     if (context.mounted) AppToast.error(context, 'Could not open', f.message);
     return;
   }
-  if (!context.mounted || detail == null) return;
+  if (!context.mounted) return;
 
   // An if-chain rather than a switch: only one branch ever runs, but a switch
   // over awaited arms reads as a `BuildContext` used across an async gap.
@@ -389,8 +391,6 @@ Future<void> _delete(
         await api.deleteVehicle(row.id);
       case MasterKind.sightseeing:
         await api.deleteSightseeing(row.numericId!);
-      case MasterKind.vendors:
-        return;
     }
     ref.invalidate(masterRowsProvider);
     if (context.mounted) AppToast.success(context, 'Deleted', row.title);

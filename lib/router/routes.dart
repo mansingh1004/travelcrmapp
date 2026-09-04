@@ -47,6 +47,7 @@ abstract final class Routes {
 
   // ── Management ─────────────────────────────────────────────────────────
   static const masters = '/masters';
+  static const vendors = '/vendors';
   static const profile = '/profile';
   static const settings = '/settings';
   static const search = '/search';

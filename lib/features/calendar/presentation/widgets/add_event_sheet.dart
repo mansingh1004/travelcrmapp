@@ -7,7 +7,6 @@ import '../../../../core/formatters/app_date.dart';
 import '../../../../core/icons/app_icon.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../data/services/task_api.dart';
-import '../../../../widgets/app_toast.dart';
 import '../../providers/calendar_controller.dart';
 
 /// Add an event to the calendar.
@@ -23,8 +22,13 @@ class AddEventSheet extends ConsumerStatefulWidget {
   /// The day the calendar had selected, pre-filled as the event's date.
   final DateTime day;
 
-  static Future<void> show(BuildContext context, {required DateTime day}) =>
-      showModalBottomSheet<void>(
+  /// Returns a line describing the event added, or null when dismissed.
+  ///
+  /// The caller raises the toast, because this sheet's context is deactivated
+  /// the moment it pops — "Looking up a deactivated widget's ancestor is
+  /// unsafe". The event was always created; the confirmation was what got lost.
+  static Future<String?> show(BuildContext context, {required DateTime day}) =>
+      showModalBottomSheet<String>(
         context: context,
         isScrollControlled: true,
         backgroundColor: AppColors.surface,
@@ -111,10 +115,7 @@ class _AddEventSheetState extends ConsumerState<AddEventSheet> {
         ..invalidate(calendarSummaryProvider);
 
       if (!mounted) return;
-      Navigator.of(context).pop();
-      AppToast.success(
-        context,
-        'Event added',
+      Navigator.of(context).pop(
         '${_title.text.trim()} · ${AppDate.display(_date)}',
       );
     } on Failure catch (f) {

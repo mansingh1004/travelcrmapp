@@ -17,8 +17,36 @@ import '../../../router/safe_pop.dart';
 import '../../../widgets/app_card.dart';
 import '../../../widgets/state_views.dart';
 import '../../leads/providers/lead_detail_provider.dart';
+import '../../masters/api/masters_api.dart' show DropdownOption;
 import '../../masters/presentation/widgets/form_fields.dart';
 import '../../quotations/providers/quotations_controller.dart';
+
+/// A vendor as this form needs it: the request wants `vendorPublicId`, a UUID,
+/// while the picker shows a name, so both travel together and the name is only
+/// ever a label.
+typedef VendorOption = ({String id, String name});
+
+/// The vendors a booking can be placed with.
+///
+/// **`status=ACTIVE` only.** A suspended or blacklisted supplier stays on file
+/// — the ledger has to survive — but must not be offered on new work, and the
+/// server narrows the list rather than the client, so nothing is hidden from
+/// page two.
+///
+/// There is no lightweight dropdown for vendors: `MasterDropdownController`
+/// has one for hotels, vehicles, sightseeing, cities and half a dozen others,
+/// but not this. So the full rows are fetched and capped at 100 — a booking
+/// form is no place to scroll a vendor ledger.
+final _vendorOptionsProvider =
+    FutureProvider.autoDispose<List<VendorOption>>((ref) async {
+  final page = await ref
+      .watch(vendorApiProvider)
+      .getVendors(size: 100, status: 'ACTIVE');
+  return [
+    for (final vendor in page.content)
+      if (vendor.publicId != null) (id: vendor.publicId!, name: vendor.name),
+  ];
+});
 
 /// Turn a lead — and the quotation the customer accepted — into a booking.
 ///
@@ -64,6 +92,16 @@ class _BookingConvertScreenState extends ConsumerState<BookingConvertScreen> {
   final _destination = TextEditingController();
   final _amount = TextEditingController();
   final _paid = TextEditingController();
+  final _vendorCost = TextEditingController();
+
+  /// The name shown in the picker, and the id the request needs.
+  String? _vendorName;
+
+  /// The vendor's public UUID, once one is picked.
+  ///
+  /// Optional on the request, and left alone when nothing is arranged yet —
+  /// which is the ordinary case at the moment a booking is taken.
+  String? _vendorId;
 
   DateTime? _travelDate;
 
@@ -118,6 +156,9 @@ class _BookingConvertScreenState extends ConsumerState<BookingConvertScreen> {
   double? get _amountValue =>
       double.tryParse(_amount.text.trim().replaceAll(',', ''));
 
+  double? get _vendorCostValue =>
+      double.tryParse(_vendorCost.text.trim().replaceAll(',', ''));
+
   Future<void> _preview() async {
     final amount = _amountValue;
     if (amount == null || amount <= 0) {
@@ -128,6 +169,7 @@ class _BookingConvertScreenState extends ConsumerState<BookingConvertScreen> {
     try {
       final financials = await ref.read(bookingApiProvider).previewFinancials(
             customerAmount: amount,
+            vendorCost: _vendorCostValue,
             paidAmount: double.tryParse(_paid.text.trim()),
             applyGst: _applyGst,
             gstInclusive: _gstInclusive,
@@ -197,6 +239,8 @@ class _BookingConvertScreenState extends ConsumerState<BookingConvertScreen> {
               quotationId: widget.quotationId,
               customerAmount: _amountValue,
               paidAmount: double.tryParse(_paid.text.trim()),
+              vendorId: _vendorId,
+              vendorCost: _vendorCostValue,
               applyGst: _applyGst,
               gstInclusive: _gstInclusive,
               applyTcs: _applyTcs,
@@ -232,6 +276,7 @@ class _BookingConvertScreenState extends ConsumerState<BookingConvertScreen> {
     _destination.dispose();
     _amount.dispose();
     _paid.dispose();
+    _vendorCost.dispose();
     super.dispose();
   }
 
@@ -374,6 +419,55 @@ class _BookingConvertScreenState extends ConsumerState<BookingConvertScreen> {
           ],
         ),
         const SizedBox(height: AppSpacing.x18),
+        Text('Vendor', style: AppType.overline),
+        const SizedBox(height: AppSpacing.x4),
+        Text(
+          'Optional — arrange it later if nothing is booked yet.',
+          style: AppType.captionSm.copyWith(color: AppColors.faint),
+        ),
+        const SizedBox(height: AppSpacing.x10),
+        Builder(
+          builder: (context) {
+            final vendors = ref.watch(_vendorOptionsProvider);
+            final options = vendors.value ?? const <VendorOption>[];
+            return SheetPicker<String>(
+              label: 'Booked through',
+              hint: 'No vendor selected',
+              enabled: !_saving,
+              value: _vendorName,
+              options: AsyncValueLike(
+                options: [
+                  for (final v in options)
+                    DropdownOption(value: 0, label: v.name),
+                ],
+                loading: vendors.isLoading,
+                error: vendors.error,
+              ),
+              optionValue: (o) => o.label,
+              onChanged: (name) => setState(() {
+                _vendorName = name;
+                // The picker shows the name; the request carries the id.
+                _vendorId = options
+                    .where((v) => v.name == name)
+                    .map((v) => v.id)
+                    .firstOrNull;
+                if (name == null) _vendorCost.clear();
+              }),
+            );
+          },
+        ),
+        const SizedBox(height: AppSpacing.x14),
+        SheetField(
+          label: 'Vendor cost',
+          controller: _vendorCost,
+          // Nothing to cost until a vendor is named, and the cost is what
+          // turns the profit line on — so the two travel together.
+          enabled: !_saving && _vendorId != null,
+          hint: _vendorId == null ? 'Choose a vendor first' : '₹',
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          maxLength: 12,
+        ),
+        const SizedBox(height: AppSpacing.x18),
         Text('Tax', style: AppType.overline),
         const SizedBox(height: AppSpacing.x4),
         Text(
@@ -442,7 +536,10 @@ class _BookingConvertScreenState extends ConsumerState<BookingConvertScreen> {
         ),
         if (_financials != null) ...[
           const SizedBox(height: AppSpacing.x8),
-          _FinancialsCard(financials: _financials!),
+          _FinancialsCard(
+            financials: _financials!,
+            showProfit: (_vendorCostValue ?? 0) > 0,
+          ),
         ],
         const SizedBox(height: AppSpacing.x16),
       ],
@@ -502,9 +599,12 @@ class _BookingConvertScreenState extends ConsumerState<BookingConvertScreen> {
 
 /// The server's figures, shown as they came.
 class _FinancialsCard extends StatelessWidget {
-  const _FinancialsCard({required this.financials});
+  const _FinancialsCard({required this.financials, required this.showProfit});
 
   final BookingFinancials financials;
+
+  /// Whether a vendor cost was given — which is what makes the profit real.
+  final bool showProfit;
 
   @override
   Widget build(BuildContext context) {
@@ -527,6 +627,11 @@ class _FinancialsCard extends StatelessWidget {
           const Divider(height: AppSpacing.x18),
           _Line(label: 'Total payable', value: financials.totalPayable, bold: true),
           _Line(label: 'Pending', value: financials.pendingAmount),
+          // Only once a vendor cost is known. Without one the server returns
+          // the whole amount as profit, which would read as a margin the agency
+          // is not actually making.
+          if (showProfit)
+            _Line(label: 'Your profit', value: financials.netProfit),
         ],
       ),
     );
@@ -581,6 +686,8 @@ Map<String, dynamic> buildConversionBody({
   String? quotationId,
   double? customerAmount,
   double? paidAmount,
+  String? vendorId,
+  double? vendorCost,
   bool? applyGst,
   bool? gstInclusive,
   bool? applyTcs,
@@ -595,6 +702,10 @@ Map<String, dynamic> buildConversionBody({
     if (customerAmount != null && customerAmount > 0)
       'customerAmount': customerAmount,
     if (paidAmount != null && paidAmount > 0) 'paidAmount': paidAmount,
+    // Both omitted when nothing is arranged yet, which is the ordinary case
+    // when a booking is taken: the vendor is chosen days later.
+    if (vendorId != null && vendorId.isNotEmpty) 'vendorPublicId': vendorId,
+    if (vendorCost != null && vendorCost > 0) 'vendorCost': vendorCost,
     'applyGst': ?applyGst,
     'gstInclusive': ?gstInclusive,
     'applyTcs': ?applyTcs,

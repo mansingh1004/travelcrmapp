@@ -13,8 +13,9 @@ import 'widgets/auth_field.dart';
 /// The running backend is **username-keyed** (the identifier resolves against
 /// the `username` column; an email address matches nothing), multi-tenant via
 /// the JWT's `tenantId` claim — so there is no workspace picker. It has no
-/// self-registration and no forgot-password endpoint: accounts and resets are
-/// handled by the tenant admin, and the links below say exactly that.
+/// self-registration and no forgot-password endpoint either: accounts are
+/// created by a tenant admin through `/api/users` and a password is changed
+/// from inside the app, so this screen offers nothing but signing in.
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
@@ -164,22 +165,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           ],
                           const SizedBox(height: AppSpacing.x22),
                           _signInButton(),
-                          const SizedBox(height: AppSpacing.x18),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              _link(
-                                'Forgot password?',
-                                color: AppColors.muted,
-                                onTap: _showAdminHelp,
-                              ),
-                              _link(
-                                'Need an account?',
-                                color: AppColors.primary,
-                                onTap: _showAdminHelp,
-                              ),
-                            ],
-                          ),
+                          // No "Forgot password?" or "Need an account?": this
+                          // backend has neither endpoint. There is no
+                          // self-registration and no password reset — a tenant
+                          // admin creates accounts through `/api/users`, and a
+                          // password is changed from inside the app. Offering
+                          // links that only explain they do nothing was worse
+                          // than not offering them.
                           const Spacer(),
                           Padding(
                             padding: const EdgeInsets.only(
@@ -203,41 +195,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 ),
               ),
             ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  /// The server has no self-registration or forgot-password endpoint — both
-  /// are admin-managed — so these links explain that instead of opening a form
-  /// that could never submit.
-  void _showAdminHelp() {
-    showModalBottomSheet<void>(
-      context: context,
-      backgroundColor: AppColors.surface,
-      shape: const RoundedRectangleBorder(borderRadius: AppRadii.rSheet),
-      builder: (context) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.x20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Accounts are managed by your admin', style: AppType.h2),
-              const SizedBox(height: AppSpacing.x10),
-              Text(
-                'Your workspace administrator creates sign-ins and resets '
-                'passwords. Ask them for a new account or a password reset — '
-                'once signed in, you can change your own password from Profile.',
-                style: AppType.body,
-              ),
-              const SizedBox(height: AppSpacing.x20),
-              FilledButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: const Text('Got it'),
-              ),
-            ],
           ),
         ),
       ),
@@ -295,20 +252,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     ),
   );
 
-  Widget _link(
-    String label, {
-    required Color color,
-    required VoidCallback onTap,
-  }) => InkWell(
-    onTap: onTap,
-    child: Padding(
-      padding: const EdgeInsets.symmetric(vertical: AppSpacing.x10),
-      child: Text(
-        label,
-        style: AppType.chip.copyWith(fontSize: 12.5, color: color),
-      ),
-    ),
-  );
 }
 
 class _ErrorBanner extends StatelessWidget {

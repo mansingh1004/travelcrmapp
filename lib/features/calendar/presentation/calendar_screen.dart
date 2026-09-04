@@ -11,6 +11,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../domain/entities/calendar.dart';
 import '../../../router/routes.dart';
 import '../../../widgets/app_card.dart';
+import '../../../widgets/app_toast.dart';
 import '../../../widgets/state_views.dart';
 import '../providers/calendar_controller.dart';
 import 'widgets/add_event_sheet.dart';
@@ -534,7 +535,7 @@ class _AddEventButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FilledButton(
-      onPressed: () => AddEventSheet.show(context, day: day),
+      onPressed: () => _addEvent(context, day),
       style: FilledButton.styleFrom(
         padding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.x12,
@@ -592,7 +593,7 @@ class _DayEmpty extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.x14),
           OutlinedButton(
-            onPressed: () => AddEventSheet.show(context, day: day),
+            onPressed: () => _addEvent(context, day),
             child: const Text('Add event'),
           ),
         ],
@@ -989,5 +990,16 @@ class _TypeChip extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+/// Opens the sheet, then confirms once it has closed.
+///
+/// The toast belongs out here: inside the sheet it ran on a context that had
+/// just been popped, and Flutter refuses to walk up from a deactivated element.
+Future<void> _addEvent(BuildContext context, DateTime day) async {
+  final added = await AddEventSheet.show(context, day: day);
+  if (added != null && context.mounted) {
+    AppToast.success(context, 'Event added', added);
   }
 }

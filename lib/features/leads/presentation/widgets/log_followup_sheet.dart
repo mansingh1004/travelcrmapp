@@ -5,7 +5,6 @@ import '../../../../core/errors/failure.dart';
 import '../../../../core/formatters/app_date.dart';
 import '../../../../core/icons/app_icon.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../../../widgets/app_toast.dart';
 import '../../providers/lead_detail_provider.dart';
 
 /// Log a follow-up — `POST /api/leads/{publicId}/logs`.
@@ -20,12 +19,18 @@ class LogFollowUpSheet extends ConsumerStatefulWidget {
 
   final String leadId;
 
-  static Future<void> show(
+  /// Returns a line describing what was logged, or null when dismissed.
+  ///
+  /// The caller raises the toast: this sheet's context is deactivated the
+  /// moment it pops, and walking up from a deactivated element is exactly what
+  /// "Looking up a deactivated widget's ancestor is unsafe" means. The log was
+  /// always written; the confirmation was what got lost.
+  static Future<String?> show(
     BuildContext context,
     WidgetRef ref, {
     required String leadId,
   }) =>
-      showModalBottomSheet<void>(
+      showModalBottomSheet<String>(
         context: context,
         isScrollControlled: true,
         backgroundColor: AppColors.surface,
@@ -112,11 +117,8 @@ class _LogFollowUpSheetState extends ConsumerState<LogFollowUpSheet> {
             followUpDate: _createReminder ? _followUpDate : null,
           );
       if (!mounted) return;
-      Navigator.of(context).pop();
-      AppToast.show(
-        context,
-        title: 'Follow-up logged',
-        message: _createReminder && _followUpDate != null
+      Navigator.of(context).pop(
+        _createReminder && _followUpDate != null
             ? 'Reminder set for ${AppDate.display(_followUpDate)}.'
             : 'Added to the lead history.',
       );

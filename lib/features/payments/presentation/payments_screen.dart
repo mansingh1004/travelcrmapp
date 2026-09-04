@@ -11,6 +11,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../domain/entities/booking.dart';
 import '../../../router/routes.dart';
 import '../../../widgets/app_card.dart';
+import '../../../widgets/app_toast.dart';
 import '../../../widgets/state_views.dart';
 import '../../../widgets/status_chip.dart';
 import '../providers/payments_controller.dart';
@@ -127,12 +128,23 @@ class _PaymentsScreenState extends ConsumerState<PaymentsScreen> {
                           itemBuilder: (context, index) => _PaymentRow(
                             booking: value[index],
                             showCollected: _showCollected,
-                            onRecord: () => RecordPaymentSheet.show(
-                              context,
-                              bookingId: value[index].id,
-                              customerName: value[index].customerName,
-                              balance: value[index].pendingAmount,
-                            ),
+                            onRecord: () async {
+                              final recorded = await RecordPaymentSheet.show(
+                                context,
+                                bookingId: value[index].id,
+                                customerName: value[index].customerName,
+                                balance: value[index].pendingAmount,
+                              );
+                              // Raised here, not inside the sheet: the sheet's
+                              // context is deactivated the moment it pops.
+                              if (recorded != null && context.mounted) {
+                                AppToast.success(
+                                  context,
+                                  'Payment recorded',
+                                  recorded,
+                                );
+                              }
+                            },
                             onOpen: () =>
                                 context.push(Routes.bookingDetailFor(value[index].id)),
                           ),

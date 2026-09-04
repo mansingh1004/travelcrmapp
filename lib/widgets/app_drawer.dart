@@ -41,6 +41,10 @@ class AppDrawer extends ConsumerWidget {
     ]),
     _Group('Management', [
       _Entry('Masters', Ic.grid, Routes.masters, live: true),
+      // Its own entry, not a Masters tab: a vendor carries a ledger, its own
+      // lifecycle and its own permissions, and the desktop console separates
+      // them the same way.
+      _Entry('Vendors', Ic.building, Routes.vendors, live: true),
       _Entry('Profile', Ic.user, Routes.profile, live: true),
       _Entry('Settings', Ic.cog, Routes.settings, live: true),
     ]),

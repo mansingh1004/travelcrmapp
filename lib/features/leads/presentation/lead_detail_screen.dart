@@ -343,7 +343,7 @@ class _ActionRow extends ConsumerWidget {
             icon: Ic.clock,
             label: 'Follow-up',
             color: AppColors.warn,
-            onTap: () => LogFollowUpSheet.show(context, ref, leadId: lead.id),
+            onTap: () => _logFollowUp(context, ref, lead.id),
           ),
         ],
       ),
@@ -426,7 +426,7 @@ class _Timeline extends ConsumerWidget {
               Text('Follow-up history', style: AppType.h3),
               const Spacer(),
               TextButton(
-                onPressed: () => LogFollowUpSheet.show(context, ref, leadId: lead.id),
+                onPressed: () => _logFollowUp(context, ref, lead.id),
                 child: const Text('Log'),
               ),
             ],
@@ -571,5 +571,17 @@ class _Section extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+/// Opens the follow-up sheet, then confirms once it has closed.
+///
+/// The toast belongs here rather than inside the sheet: a popped sheet's
+/// element is deactivated, and `AppToast` has to walk up from the context it
+/// is handed.
+Future<void> _logFollowUp(BuildContext context, WidgetRef ref, String leadId) async {
+  final logged = await LogFollowUpSheet.show(context, ref, leadId: leadId);
+  if (logged != null && context.mounted) {
+    AppToast.show(context, title: 'Follow-up logged', message: logged);
   }
 }

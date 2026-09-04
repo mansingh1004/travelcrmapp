@@ -9,8 +9,7 @@ enum MasterKind {
   vehicles('/api/vehicles', 'Vehicles', 'name'),
   // `/api/sightseeings` **500s** when a `sortBy` is sent — it has no sort
   // whitelist — so it is requested unsorted and the server's own order stands.
-  sightseeing('/api/sightseeings', 'Sightseeing', null),
-  vendors('/api/vendors', 'Vendors', 'vendorName');
+  sightseeing('/api/sightseeings', 'Sightseeing', null);
 
   const MasterKind(this.path, this.label, this.sortBy);
 
@@ -28,7 +27,6 @@ enum MasterKind {
         MasterKind.hotels => 'hotel',
         MasterKind.vehicles => 'vehicle',
         MasterKind.sightseeing => 'sightseeing',
-        MasterKind.vendors => 'vendor',
       };
 }
 
@@ -352,19 +350,6 @@ class MastersApi {
             trailing: json['estimatedHours'] == null
                 ? null
                 : '${json['estimatedHours']}h',
-          ),
-        MasterKind.vendors => MasterRow(
-            id: json['publicId'] as String? ?? '${json['id'] ?? ''}',
-            title: _str(json['vendorName']) ?? 'Vendor',
-            subtitle: [
-              _str(json['vendorType']),
-              _str(json['city']),
-            ].whereType<String>().join(' · '),
-            trailing: _str(json['vendorCode']),
-            tags: [
-              if (_str(json['status']) != null) _str(json['status'])!,
-              if (json['verified'] as bool? ?? false) 'Verified',
-            ],
           ),
       };
 

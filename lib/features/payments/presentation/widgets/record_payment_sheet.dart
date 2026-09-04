@@ -6,7 +6,6 @@ import '../../../../core/formatters/app_date.dart';
 import '../../../../core/formatters/inr.dart';
 import '../../../../core/icons/app_icon.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../../../widgets/app_toast.dart';
 import '../../providers/payments_controller.dart';
 
 /// Record a receipt against a booking — `POST /api/bookings/{id}/payments`.
@@ -26,13 +25,21 @@ class RecordPaymentSheet extends ConsumerStatefulWidget {
   final String customerName;
   final double balance;
 
-  static Future<void> show(
+  /// Returns a line describing what was recorded, or null when the sheet was
+  /// dismissed.
+  ///
+  /// A value rather than nothing, so the **caller** raises the toast. Doing it
+  /// here meant calling `ScaffoldMessenger.of` on this sheet's own context the
+  /// instant after popping it, and a popped sheet's element is deactivated —
+  /// "Looking up a deactivated widget's ancestor is unsafe". The payment was
+  /// always saved; the confirmation was what got lost.
+  static Future<String?> show(
     BuildContext context, {
     required String bookingId,
     required String customerName,
     required double balance,
   }) =>
-      showModalBottomSheet<void>(
+      showModalBottomSheet<String>(
         context: context,
         isScrollControlled: true,
         backgroundColor: AppColors.surface,
@@ -118,10 +125,7 @@ class _RecordPaymentSheetState extends ConsumerState<RecordPaymentSheet> {
             date: _date,
           );
       if (!mounted) return;
-      Navigator.of(context).pop();
-      AppToast.success(
-        context,
-        'Payment recorded',
+      Navigator.of(context).pop(
         '${Inr.format(amount)} from ${widget.customerName}.',
       );
     } on Failure catch (f) {
