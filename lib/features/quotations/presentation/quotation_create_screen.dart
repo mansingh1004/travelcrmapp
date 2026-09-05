@@ -229,14 +229,71 @@ class _QuotationCreateScreenState extends ConsumerState<QuotationCreateScreen> {
       // quotation that now exists.
       context.pushReplacement(Routes.quotationPreviewFor(draft.publicId ?? ''));
     } on Failure catch (f) {
+      if (mounted) AppToast.error(context, 'Could not create the quotation', f.message);
+    } catch (e) {
+      // A parse error out of the reply is not a Failure, and the quotation is
+      // already saved by the time one can happen.
       if (mounted) {
-        setState(() => _saving = false);
-        AppToast.error(context, 'Could not create the quotation', f.message);
+        AppToast.error(
+          context,
+          'The quotation may have been created',
+          'The reply could not be read. Check the lead before trying again.',
+        );
       }
+    } finally {
+      // Without this the submit button's spinner turned for ever.
+      if (mounted) setState(() => _saving = false);
     }
   }
 
   Future<void> _apply(TemplateMatchDto template) async {
+    // Applying a package **creates a real quotation** — versioned, numbered and
+    // on the lead's history for good. A tap while scrolling should not do that,
+    // and there is no undo, so it is confirmed first. Nothing else on this
+    // screen writes to the server without being asked.
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: AppColors.surface,
+        title: Text('Use this package?', style: AppType.h3),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(template.name, style: AppType.rowTitle),
+            const SizedBox(height: AppSpacing.x6),
+            Text(
+              [
+                if (template.durationNights != null)
+                  '${template.durationNights}N',
+                if (template.hotelTier != null) '${template.hotelTier}★',
+                if (template.basePrice != null)
+                  Inr.format(template.basePrice!.toDouble()),
+              ].join(' · '),
+              style: AppType.bodySm,
+            ),
+            const SizedBox(height: AppSpacing.x12),
+            Text(
+              'This creates a quotation on the lead straight away, filled from '
+              'the package. You can edit it afterwards.',
+              style: AppType.bodySm,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text('Create'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+
     setState(() => _busyTemplateId = template.id);
     try {
       final draft = await ref
@@ -245,10 +302,21 @@ class _QuotationCreateScreenState extends ConsumerState<QuotationCreateScreen> {
       if (!mounted) return;
       context.pushReplacement(Routes.quotationPreviewFor(draft.publicId ?? ''));
     } on Failure catch (f) {
+      if (mounted) AppToast.error(context, 'Could not apply the package', f.message);
+    } catch (e) {
+      // Not a Failure — a parse error out of the reply, say. The quotation is
+      // already on the server by then, so say so rather than implying nothing
+      // happened.
       if (mounted) {
-        setState(() => _busyTemplateId = null);
-        AppToast.error(context, 'Could not apply the package', f.message);
+        AppToast.error(
+          context,
+          'The quotation may have been created',
+          'The reply could not be read. Check the lead before trying again.',
+        );
       }
+    } finally {
+      // Without this the card's spinner turned for ever on any failure.
+      if (mounted) setState(() => _busyTemplateId = null);
     }
   }
 

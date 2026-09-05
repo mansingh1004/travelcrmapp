@@ -127,10 +127,20 @@ class _QuotationEditScreenState extends ConsumerState<QuotationEditScreen> {
       ref.invalidate(quotationDocumentProvider(widget.publicId));
       context.pushReplacement(Routes.quotationPreviewFor(widget.publicId));
     } on Failure catch (f) {
+      if (mounted) AppToast.error(context, 'Could not save', f.message);
+    } catch (e) {
+      // Not a Failure — a parse error out of the reply. The save has already
+      // landed on the server by then, so the wording must not deny it.
       if (mounted) {
-        setState(() => _saving = false);
-        AppToast.error(context, 'Could not save', f.message);
+        AppToast.error(
+          context,
+          'The changes may have been saved',
+          'The reply could not be read. Reopen the quotation to check.',
+        );
       }
+    } finally {
+      // Without this the Save button's spinner turned for ever.
+      if (mounted) setState(() => _saving = false);
     }
   }
 

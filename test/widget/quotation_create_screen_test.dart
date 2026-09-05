@@ -132,4 +132,33 @@ void main() {
 
     expect(find.text('Save as empty draft'), findsOneWidget);
   });
+
+  testWidgets('a package is confirmed before it creates anything', (tester) async {
+    // Applying a package creates a real, numbered quotation on the lead with no
+    // undo. A tap while scrolling used to be enough to do it.
+    await tester.pumpWidget(_app(oneTemplate));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Goa & Manali Grand Tour'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Use this package?'), findsOneWidget);
+    expect(find.text('Cancel'), findsOneWidget);
+    expect(find.text('Create'), findsOneWidget);
+  });
+
+  testWidgets('cancelling the confirmation creates nothing', (tester) async {
+    await tester.pumpWidget(_app(oneTemplate));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Goa & Manali Grand Tour'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Cancel'));
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    // Still on the builder, with the package untouched.
+    expect(find.text('Use this package?'), findsNothing);
+    expect(find.text('Goa & Manali Grand Tour'), findsOneWidget);
+  });
 }
