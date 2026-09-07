@@ -17,9 +17,8 @@ import '../data/services/company_api.dart';
 import '../data/services/customer_api.dart';
 import '../data/services/lead_api.dart';
 import '../features/masters/masters.dart';
-import '../features/reminders/api/booking_reminder_api.dart';
-import '../features/reminders/api/reminder_api.dart';
-import '../features/vendors/api/vendor_api.dart';
+import '../features/reminders/reminders.dart';
+import '../features/vendors/vendors.dart';
 import '../features/notifications/notifications.dart';
 import '../data/services/operations_api.dart';
 import '../features/payments/payments.dart';
@@ -33,7 +32,7 @@ import '../domain/repositories/customer_repository.dart';
 import '../domain/repositories/lead_repository.dart';
 import '../domain/repositories/operations_repository.dart';
 import '../domain/repositories/quotation_repository.dart';
-import '../features/auth/providers/auth_controller.dart';
+import '../features/auth/auth.dart';
 
 /// Composition root. Everything the app injects is wired here, so tests can
 /// override a single provider rather than reaching into constructors.
