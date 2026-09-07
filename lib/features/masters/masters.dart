@@ -1,11 +1,12 @@
 /// Public surface of the masters feature.
 ///
-/// Import this file rather than reaching into the folder's subdirectories, so
-/// the internal layout (api/, presentation/, widgets/) can move without
-/// touching every call site. This is the Dart equivalent of a JS `index.js`
-/// barrel: only what is exported here is meant to be used from outside.
+/// Import this file from outside the feature rather than reaching into
+/// api/, presentation/ or providers/, so the internal layout can change
+/// without touching call sites. The Dart equivalent of a JS `index.js`.
 library;
 
 export 'api/masters_api.dart';
 export 'presentation/geography_screen.dart';
 export 'presentation/masters_screen.dart';
+export 'presentation/widgets/form_fields.dart';
+export 'presentation/widgets/geography_providers.dart';

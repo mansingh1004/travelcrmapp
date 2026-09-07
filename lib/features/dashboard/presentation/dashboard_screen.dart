@@ -14,9 +14,8 @@ import '../../../domain/repositories/lead_repository.dart';
 import '../../../router/routes.dart';
 import '../../../widgets/app_card.dart';
 import '../../../widgets/state_views.dart';
-import '../../auth/providers/auth_controller.dart';
-import '../../leads/presentation/widgets/lead_card.dart';
-import '../../leads/providers/leads_controller.dart';
+import '../../auth/auth.dart';
+import '../../leads/leads.dart';
 
 /// Today's follow-up queue — `GET /api/leads?followUpDueBy=today`, i.e. the
 /// leads whose follow-up is due today or already overdue.

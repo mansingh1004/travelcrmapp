@@ -18,7 +18,7 @@ import '../../../widgets/app_card.dart';
 import '../../../widgets/app_toast.dart';
 import '../../../widgets/state_views.dart';
 import '../../../widgets/status_chip.dart';
-import '../../profile/presentation/profile_screen.dart' show companyProvider;
+import '../../profile/profile.dart' show companyProvider;
 import '../providers/quotations_controller.dart';
 import '../../../router/safe_pop.dart';
 

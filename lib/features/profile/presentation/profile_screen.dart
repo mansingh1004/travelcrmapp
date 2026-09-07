@@ -12,16 +12,9 @@ import '../../../router/routes.dart';
 import '../../../widgets/app_avatar.dart';
 import '../../../widgets/app_card.dart';
 import '../../../widgets/app_toast.dart';
-import '../../auth/providers/auth_controller.dart';
+import '../../auth/auth.dart';
 import '../../../router/safe_pop.dart';
-
-final meProfileProvider = FutureProvider.autoDispose<MeProfile>(
-  (ref) => ref.watch(companyApiProvider).getProfile(),
-);
-
-final companyProvider = FutureProvider.autoDispose<Company>(
-  (ref) => ref.watch(companyApiProvider).getCompany(),
-);
+import '../providers/profile_providers.dart';
 
 /// Profile — the signed-in user, their agency, and account actions.
 ///

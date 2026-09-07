@@ -16,10 +16,9 @@ import '../../../router/routes.dart';
 import '../../../router/safe_pop.dart';
 import '../../../widgets/app_card.dart';
 import '../../../widgets/state_views.dart';
-import '../../leads/providers/lead_detail_provider.dart';
-import '../../masters/api/masters_api.dart' show DropdownOption;
-import '../../masters/presentation/widgets/form_fields.dart';
-import '../../quotations/providers/quotations_controller.dart';
+import '../../leads/leads.dart';
+import '../../masters/masters.dart';
+import '../../quotations/quotations.dart';
 
 /// A vendor as this form needs it: the request wants `vendorPublicId`, a UUID,
 /// while the picker shows a name, so both travel together and the name is only

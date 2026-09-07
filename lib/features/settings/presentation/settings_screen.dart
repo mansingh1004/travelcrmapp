@@ -11,8 +11,8 @@ import '../../../router/routes.dart';
 import '../../../widgets/app_card.dart';
 import '../../../widgets/app_toast.dart';
 import '../../../widgets/state_views.dart';
-import '../../auth/providers/auth_controller.dart';
-import '../../profile/presentation/profile_screen.dart';
+import '../../auth/auth.dart';
+import '../../profile/profile.dart';
 import '../../../router/safe_pop.dart';
 
 /// Settings.
