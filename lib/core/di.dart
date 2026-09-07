@@ -17,6 +17,7 @@ import '../data/services/company_api.dart';
 import '../data/services/customer_api.dart';
 import '../data/services/lead_api.dart';
 import '../features/masters/masters.dart';
+import '../features/reminders/api/booking_reminder_api.dart';
 import '../features/reminders/api/reminder_api.dart';
 import '../features/vendors/api/vendor_api.dart';
 import '../features/notifications/notifications.dart';
@@ -96,6 +97,12 @@ final vendorApiProvider =
 /// tasks despite sharing the calendar feed.
 final reminderApiProvider =
     Provider<ReminderApi>((ref) => ReminderApi(ref.watch(dioProvider)));
+
+/// Booking reminders — a separate backend module, not a filter on the one
+/// above: its own table, its own service, its own type and status vocabularies.
+final bookingReminderApiProvider = Provider<BookingReminderApi>(
+  (ref) => BookingReminderApi(ref.watch(dioProvider)),
+);
 
 final taskApiProvider =
     Provider<TaskApi>((ref) => TaskApi(ref.watch(dioProvider)));

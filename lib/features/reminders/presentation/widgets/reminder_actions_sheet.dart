@@ -9,6 +9,7 @@ import '../../../../core/icons/app_icon.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../widgets/app_toast.dart';
 import '../../api/reminder_api.dart';
+import 'reminder_form_sheet.dart';
 
 /// What was done to a reminder, so the caller can raise the toast.
 ///
@@ -17,7 +18,7 @@ import '../../api/reminder_api.dart';
 /// widget's ancestor" was.
 typedef ReminderOutcome = ({String title, String message});
 
-/// The three things an agent can do to a reminder from a phone.
+/// What an agent can do to a reminder from a phone.
 ///
 /// Deleting is deliberately absent. `TRAVEL_AGENT` holds every REMINDER_*
 /// permission except `_DELETE`, so the button would 403 for the role that uses
@@ -85,6 +86,17 @@ class _ReminderActionsSheetState extends ConsumerState<ReminderActionsSheet> {
       title: 'Snoozed',
       message: 'Back on ${AppDate.dateTime(until)}.',
     );
+  }
+
+  /// Open the edit form over this sheet, and close both once it saves.
+  ///
+  /// Editing needs the same REMINDER_UPDATE the other actions do, so it sits
+  /// with them rather than behind a separate route.
+  Future<void> _edit() async {
+    final saved =
+        await ReminderFormSheet.show(context, reminder: _reminder);
+    if (saved == null || !mounted) return;
+    Navigator.of(context).pop((title: 'Reminder updated', message: saved));
   }
 
   Future<void> _call() async {
@@ -174,6 +186,11 @@ class _ReminderActionsSheetState extends ConsumerState<ReminderActionsSheet> {
                   icon: Ic.clock,
                   label: 'Snooze',
                   onTap: _snooze,
+                ),
+                _Action(
+                  icon: Ic.edit,
+                  label: 'Edit',
+                  onTap: _edit,
                 ),
                 _Action(
                   icon: Ic.close,

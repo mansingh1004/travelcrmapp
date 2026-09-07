@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:crmapp/core/di.dart';
 import 'package:crmapp/core/formatters/app_date.dart';
 import 'package:crmapp/core/theme/app_theme.dart';
+import 'package:crmapp/features/reminders/api/booking_reminder_api.dart';
 import 'package:crmapp/features/reminders/api/reminder_api.dart';
 import 'package:crmapp/features/reminders/presentation/reminders_screen.dart';
 import 'package:dio/dio.dart';
@@ -54,11 +55,28 @@ String _row({
     '"status":"$status","leadPublicId":"fe3f9e63-1de4-4792-a234-e5e45e9ffcd1",'
     '"leadName":"raju","phone":"12323222","dueDate":"$due"}';
 
+/// A booking-side row — note `Payment_due`, which the lead module has no
+/// equivalent of, and `Completed`, which here can still be reopened.
+String _bookingRowWith({String status = 'Completed'}) =>
+    '{"id":5,"bookingCode":"BK10005","customerName":"Vikram Singh",'
+    '"phone":"+91 98765 10004","destination":"Goa",'
+    '"reminderType":"Payment_due","message":"Balance due",'
+    '"travelDate":"2026-08-31T06:54:09Z",'
+    '"reminderDate":"2026-08-12T06:54:09Z","status":"$status",'
+    '"amount":90000.0,"createdAt":"2026-08-07T12:24:09.282866"}';
+
+final _bookingRow = _bookingRowWith();
+
 Widget _app(_Adapter adapter) {
   final dio = Dio(BaseOptions(baseUrl: 'http://x'))..httpClientAdapter = adapter;
 
   return ProviderScope(
-    overrides: [reminderApiProvider.overrideWithValue(ReminderApi(dio))],
+    overrides: [
+      reminderApiProvider.overrideWithValue(ReminderApi(dio)),
+      // Both modules go through the same fake transport, so a request either
+      // one makes shows up in `adapter.requested` and neither reaches a socket.
+      bookingReminderApiProvider.overrideWithValue(BookingReminderApi(dio)),
+    ],
     child: MaterialApp(
       theme: AppTheme.light,
       home: const RemindersScreen(),
@@ -156,6 +174,92 @@ void main() {
 
     expect(find.text('Mark complete'), findsNothing);
     expect(find.textContaining('already completed'), findsOneWidget);
+  });
+
+  testWidgets('the Bookings tab reads the other module entirely',
+      (tester) async {
+    // A different backend module behind the same tab bar: separate table,
+    // separate endpoints, separate vocabularies. The tab must not be served
+    // from a filter on the lead-side list.
+    final adapter = _Adapter({
+      '/api/reminders/overdue': '[${_row()}]',
+      '/api/booking-reminders': '[$_bookingRow]',
+    });
+    await tester.pumpWidget(_app(adapter));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Bookings'));
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    expect(adapter.requested, [
+      '/api/reminders/overdue',
+      '/api/booking-reminders',
+    ]);
+    expect(find.text('Vikram Singh'), findsOneWidget);
+    expect(find.textContaining('Payment due'), findsOneWidget);
+    expect(find.textContaining('BK10005'), findsOneWidget);
+  });
+
+  testWidgets('Add is hidden on the Bookings tab', (tester) async {
+    // Creating one needs a booking to hang it on, and that flow starts from
+    // the booking — an Add here would open a form with nothing to attach to.
+    final adapter = _Adapter({
+      '/api/reminders/overdue': '[${_row()}]',
+      '/api/booking-reminders': '[$_bookingRow]',
+    });
+    await tester.pumpWidget(_app(adapter));
+    await tester.pumpAndSettle();
+    expect(find.text('Add'), findsOneWidget);
+
+    await tester.tap(find.text('Bookings'));
+    await tester.pumpAndSettle();
+    expect(find.text('Add'), findsNothing);
+  });
+
+  testWidgets('a booking reminder offers complete, but never send-now',
+      (tester) async {
+    // `POST /{id}/send-now` answers 422 "WhatsApp is not configured" until the
+    // tenant's provider is set up server-side, so the button would only ever
+    // fail. Calling the customer works today and is offered instead.
+    final adapter = _Adapter({
+      '/api/reminders/overdue': '[${_row()}]',
+      '/api/booking-reminders': '[${_bookingRowWith(status: 'Pending')}]',
+    });
+    await tester.pumpWidget(_app(adapter));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Bookings'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Vikram Singh'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Mark complete'), findsOneWidget);
+    expect(find.text('Call Vikram Singh'), findsOneWidget);
+    expect(find.textContaining('Send'), findsNothing);
+    expect(
+      find.text('Snooze'),
+      findsNothing,
+      reason: 'the date belongs to the trip, so it is not the agent\'s to move',
+    );
+  });
+
+  testWidgets('a completed booking reminder can be reopened', (tester) async {
+    // No equivalent on the lead side, where completed is final.
+    final adapter = _Adapter({
+      '/api/reminders/overdue': '[${_row()}]',
+      '/api/booking-reminders': '[$_bookingRow]',
+    });
+    await tester.pumpWidget(_app(adapter));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Bookings'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Vikram Singh'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Reopen'), findsOneWidget);
+    expect(find.text('Mark complete'), findsNothing);
   });
 
   group('the due line', () {

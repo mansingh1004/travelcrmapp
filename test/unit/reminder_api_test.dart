@@ -219,6 +219,42 @@ void main() {
       );
     });
 
+    test('updates only the fields that were given', () async {
+      // PUT by verb, partial by behaviour: `ReminderMapper.updateEntity`
+      // "applies only the non-null fields", so an omitted key leaves that
+      // column alone. Sending the whole form every time would let a field this
+      // sheet does not show — the assignee, say — be blanked by an edit that
+      // never mentioned it.
+      final adapter = _CapturingAdapter(_row);
+      await ReminderApi(_dio(adapter)).updateReminder(
+        9,
+        title: 'Call Rahul again',
+        priority: 'High',
+      );
+
+      final body = adapter.captured!.data! as Map<String, dynamic>;
+      expect(adapter.captured!.method, 'PUT');
+      expect(adapter.captured!.path, '/api/reminders/9');
+      expect(body, {'title': 'Call Rahul again', 'priority': 'High'});
+    });
+
+    test('sends a moved due date as a UTC instant', () async {
+      // Moving the date is also how an overdue reminder is revived: the
+      // service clears `notified` and, with no status stated, flips OVERDUE
+      // back to Active — so this one field carries more than it looks like.
+      final adapter = _CapturingAdapter(_row);
+      await ReminderApi(_dio(adapter))
+          .updateReminder(9, dueDate: DateTime.utc(2026, 9, 15, 11, 30));
+
+      final body = adapter.captured!.data! as Map<String, dynamic>;
+      expect(body, {'dueDate': '2026-09-15T11:30:00Z'});
+      expect(
+        body.containsKey('status'),
+        isFalse,
+        reason: 'stating a status would suppress the revive',
+      );
+    });
+
     test('snoozes to a given moment without touching the due date', () async {
       // Snooze sets status + snoozedUntil only; `dueDate` stays put, so the
       // original commitment survives on the record.

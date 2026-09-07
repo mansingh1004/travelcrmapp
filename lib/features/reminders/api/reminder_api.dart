@@ -94,11 +94,7 @@ class Reminder {
   bool get isOpen => status != 'Completed' && status != 'Dismissed';
 
   /// `Follow_up` → `Follow up`, for display only. Never send this back.
-  String get typeLabel {
-    final raw = type;
-    if (raw == null || raw.isEmpty) return '—';
-    return raw.replaceAll('_', ' ');
-  }
+  String get typeLabel => type == null ? '—' : reminderTypeLabel(type!);
 
   static String? str(Object? value) {
     if (value == null) return null;
@@ -259,6 +255,39 @@ class ReminderApi {
         },
       );
 
+  /// `PUT /api/reminders/{id}` — a **partial** update despite the verb.
+  ///
+  /// `ReminderMapper.updateEntity` "applies only the non-null fields", so an
+  /// omitted key leaves that column alone rather than blanking it. Only what
+  /// the form actually changed goes out.
+  ///
+  /// Moving `dueDate` also revives the reminder: the service clears `notified`
+  /// on any date change and, if the caller states no status, flips an `OVERDUE`
+  /// row back to `Active` — because OVERDUE is precisely the state a reminder
+  /// gets rescheduled from, and it would otherwise keep a badge it no longer
+  /// earns while staying silent.
+  Future<Reminder> updateReminder(
+    int id, {
+    String? title,
+    DateTime? dueDate,
+    String? description,
+    String? type,
+    String? priority,
+    String? notes,
+  }) =>
+      _write(
+        'PUT',
+        '/api/reminders/$id',
+        body: <String, dynamic>{
+          'title': ?_trimToNull(title),
+          'dueDate': ?(dueDate == null ? null : toWireInstant(dueDate)),
+          'description': ?_trimToNull(description),
+          'type': ?type,
+          'priority': ?priority,
+          'notes': ?_trimToNull(notes),
+        },
+      );
+
   /// `PATCH /api/reminders/{id}/complete`.
   Future<Reminder> markComplete(int id) =>
       _write('PATCH', '/api/reminders/$id/complete');
@@ -335,6 +364,13 @@ List<Reminder> remindersFrom(Object? data) {
       .map(Reminder.fromJson)
       .toList(growable: false);
 }
+
+/// `Follow_up` → `Follow up`.
+///
+/// Display only. The underscore is part of the enum, so the wire value has to
+/// travel back untouched — a filter built from a prettified label matches
+/// nothing, and this server drops an unmatched filter without complaining.
+String reminderTypeLabel(String wire) => wire.replaceAll('_', ' ');
 
 /// Format a moment the way `Instant` expects it: UTC, `Z`-suffixed.
 ///
