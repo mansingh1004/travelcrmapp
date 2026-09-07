@@ -30,6 +30,9 @@ class AppDrawer extends ConsumerWidget {
     _Group('Operations', [
       _Entry('Operations board', Ic.checkCircle, Routes.operations, live: true),
       _Entry('Calendar', Ic.calendar, Routes.calendar, live: true),
+      // Beside the calendar because they share its feed, but its own screen:
+      // the calendar shows a reminder, this is where one is worked off.
+      _Entry('Reminders', Ic.clock, Routes.reminders, live: true),
     ]),
     _Group('Finance', [
       _Entry('Payments', Ic.wallet, Routes.payments, live: true),

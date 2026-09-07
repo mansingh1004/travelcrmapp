@@ -152,8 +152,16 @@ class CalendarScreen extends ConsumerWidget {
         context.push(Routes.bookingDetailFor(id));
       case 'LEAD':
         context.push(Routes.leadDetailFor(id));
+      case 'REMINDER':
+        // The list, not this reminder — and that is a limit of the API, not a
+        // shortcut. The feed identifies a reminder by `referencePublicId`, a
+        // UUID, while every route on `ReminderController` is keyed on
+        // `@PathVariable Long id`, and `ReminderResponseDto` never exposes the
+        // publicId to join the two. So there is no id here that can fetch one
+        // reminder; the list is the closest place the agent can still act.
+        context.push(Routes.reminders);
       default:
-        // Tasks and reminders have no screen of their own yet.
+        // Tasks still have no screen of their own.
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('${event.source?.label ?? 'This'} has no screen yet.')),
         );

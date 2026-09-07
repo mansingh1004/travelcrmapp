@@ -44,6 +44,7 @@ abstract final class Routes {
   // ── Communication ──────────────────────────────────────────────────────
   static const chat = '/inbox/:id';
   static const notifications = '/notifications';
+  static const reminders = '/reminders';
 
   // ── Management ─────────────────────────────────────────────────────────
   static const masters = '/masters';

@@ -17,6 +17,7 @@ import '../data/services/company_api.dart';
 import '../data/services/customer_api.dart';
 import '../data/services/lead_api.dart';
 import '../features/masters/masters.dart';
+import '../features/reminders/api/reminder_api.dart';
 import '../features/vendors/api/vendor_api.dart';
 import '../features/notifications/notifications.dart';
 import '../data/services/operations_api.dart';
@@ -89,6 +90,12 @@ final mastersApiProvider =
 /// ledger and their own VENDOR_* permissions.
 final vendorApiProvider =
     Provider<VendorApi>((ref) => VendorApi(ref.watch(dioProvider)));
+
+/// Reminders. Raised by the lead follow-up flow and by `ReminderScheduler`,
+/// then worked off here — their own REMINDER_* permissions, separate from
+/// tasks despite sharing the calendar feed.
+final reminderApiProvider =
+    Provider<ReminderApi>((ref) => ReminderApi(ref.watch(dioProvider)));
 
 final taskApiProvider =
     Provider<TaskApi>((ref) => TaskApi(ref.watch(dioProvider)));

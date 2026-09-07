@@ -21,6 +21,7 @@ import '../features/leads/presentation/lead_detail_screen.dart';
 import '../features/leads/presentation/leads_screen.dart';
 import '../features/operations/presentation/operations_detail_screen.dart';
 import '../features/masters/masters.dart';
+import '../features/reminders/presentation/reminders_screen.dart';
 import '../features/vendors/presentation/vendors_screen.dart';
 import '../features/notifications/notifications.dart';
 import '../features/operations/presentation/operations_screen.dart';
@@ -172,6 +173,11 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: Routes.vendors,
         parentNavigatorKey: _rootKey,
         builder: (_, _) => const VendorsScreen(),
+      ),
+      GoRoute(
+        path: Routes.reminders,
+        parentNavigatorKey: _rootKey,
+        builder: (_, _) => const RemindersScreen(),
       ),
       GoRoute(
         path: Routes.settings,
