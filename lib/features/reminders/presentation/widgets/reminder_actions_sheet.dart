@@ -10,6 +10,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../widgets/app_toast.dart';
 import '../../api/reminder_api.dart';
 import 'reminder_form_sheet.dart';
+import 'sheet_action.dart';
 
 /// What was done to a reminder, so the caller can raise the toast.
 ///
@@ -166,13 +167,13 @@ class _ReminderActionsSheetState extends ConsumerState<ReminderActionsSheet> {
               )
             else ...[
               if (_reminder.phone != null)
-                _Action(
+                SheetAction(
                   icon: Ic.phone,
                   label: 'Call ${_reminder.leadName ?? 'customer'}',
                   onTap: _call,
                 ),
               if (open) ...[
-                _Action(
+                SheetAction(
                   icon: Ic.checkCircle,
                   label: 'Mark complete',
                   color: AppColors.success,
@@ -182,17 +183,17 @@ class _ReminderActionsSheetState extends ConsumerState<ReminderActionsSheet> {
                     message: _reminder.title,
                   ),
                 ),
-                _Action(
+                SheetAction(
                   icon: Ic.clock,
                   label: 'Snooze',
                   onTap: _snooze,
                 ),
-                _Action(
+                SheetAction(
                   icon: Ic.edit,
                   label: 'Edit',
                   onTap: _edit,
                 ),
-                _Action(
+                SheetAction(
                   icon: Ic.close,
                   label: 'Dismiss',
                   color: AppColors.danger,
@@ -219,44 +220,6 @@ class _ReminderActionsSheetState extends ConsumerState<ReminderActionsSheet> {
   }
 }
 
-class _Action extends StatelessWidget {
-  const _Action({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-    this.color = AppColors.ink,
-    this.last = false,
-  });
-
-  final String icon;
-  final String label;
-  final VoidCallback onTap;
-  final Color color;
-  final bool last;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(AppRadii.tile),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: AppSpacing.x14),
-            child: Row(
-              children: [
-                AppIcon(icon, size: 18, color: color),
-                const SizedBox(width: AppSpacing.x12),
-                Text(label, style: AppType.body.copyWith(color: color)),
-              ],
-            ),
-          ),
-        ),
-        if (!last) const Divider(height: 1, color: AppColors.line),
-      ],
-    );
-  }
-}
 
 /// How long to push a reminder out by.
 ///
@@ -311,7 +274,7 @@ class _SnoozeSheet extends StatelessWidget {
             Text('Snooze until', style: AppType.h3),
             const SizedBox(height: AppSpacing.x8),
             for (final (index, (label, moment)) in options.indexed)
-              _Action(
+              SheetAction(
                 icon: Ic.clock,
                 label: label,
                 last: index == options.length - 1,

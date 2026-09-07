@@ -11,6 +11,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../widgets/app_toast.dart';
 import '../../api/booking_reminder_api.dart';
 import 'reminder_actions_sheet.dart' show ReminderOutcome;
+import 'sheet_action.dart';
 
 /// What an agent can do to a booking reminder from a phone.
 ///
@@ -158,13 +159,13 @@ class _BookingReminderActionsSheetState
               )
             else ...[
               if (_reminder.phone != null)
-                _Action(
+                SheetAction(
                   icon: Ic.phone,
                   label: 'Call ${_reminder.customerName ?? 'customer'}',
                   onTap: _call,
                 ),
               if (_reminder.isOpen)
-                _Action(
+                SheetAction(
                   icon: Ic.checkCircle,
                   label: 'Mark complete',
                   color: AppColors.success,
@@ -178,7 +179,7 @@ class _BookingReminderActionsSheetState
               else
                 // The lead-side module has no equivalent — there, done is
                 // final. Here a reminder closed by mistake can be reopened.
-                _Action(
+                SheetAction(
                   icon: Ic.refresh,
                   label: 'Reopen',
                   last: true,
@@ -196,41 +197,3 @@ class _BookingReminderActionsSheetState
   }
 }
 
-class _Action extends StatelessWidget {
-  const _Action({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-    this.color = AppColors.ink,
-    this.last = false,
-  });
-
-  final String icon;
-  final String label;
-  final VoidCallback onTap;
-  final Color color;
-  final bool last;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(AppRadii.tile),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: AppSpacing.x14),
-            child: Row(
-              children: [
-                AppIcon(icon, size: 18, color: color),
-                const SizedBox(width: AppSpacing.x12),
-                Text(label, style: AppType.body.copyWith(color: color)),
-              ],
-            ),
-          ),
-        ),
-        if (!last) const Divider(height: 1, color: AppColors.line),
-      ],
-    );
-  }
-}
