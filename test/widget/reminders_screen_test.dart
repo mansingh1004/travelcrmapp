@@ -262,6 +262,52 @@ void main() {
     expect(find.text('Mark complete'), findsNothing);
   });
 
+  testWidgets('the new-reminder form offers lead and assignee, both optional',
+      (tester) async {
+    // The web console marks both required; the server does not. Defaulting to
+    // "Not linked" and "Me" keeps the fast path — an agent writing a reminder
+    // between calls — one tap away, without hiding the references entirely.
+    final adapter = _Adapter({'/api/reminders/overdue': '[${_row()}]'});
+    await tester.pumpWidget(_app(adapter));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Add'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('New reminder'), findsOneWidget);
+    expect(find.text('Only a title and a due date are required.'), findsOneWidget);
+    expect(find.text('Lead'), findsOneWidget);
+    expect(find.text('Not linked to a lead'), findsOneWidget);
+    expect(find.text('Assign to'), findsOneWidget);
+    expect(find.text('Me'), findsOneWidget);
+    // Nothing was picked, so there is nothing to clear yet.
+    expect(find.byTooltip('Clear'), findsNothing);
+  });
+
+  testWidgets('an empty title still blocks the save', (tester) async {
+    // The only field the sheet validates — everything else the server treats
+    // as optional, so the form does too.
+    final adapter = _Adapter({'/api/reminders/overdue': '[${_row()}]'});
+    await tester.pumpWidget(_app(adapter));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Add'));
+    await tester.pumpAndSettle();
+    // The sheet is taller than the test viewport, so the submit sits off-screen
+    // until scrolled to — a plain tap would silently miss it.
+    await tester.ensureVisible(find.text('Add reminder'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Add reminder'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Give the reminder a title.'), findsOneWidget);
+    expect(
+      adapter.requested,
+      ['/api/reminders/overdue'],
+      reason: 'no create request went out',
+    );
+  });
+
   group('the due line', () {
     test('names how late a reminder is, without repeating the date', () {
       // `AppDate.relative` falls back to the formatted date once something is

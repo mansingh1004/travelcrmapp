@@ -8,6 +8,7 @@ import '../../../../core/icons/app_icon.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../masters/presentation/widgets/form_fields.dart';
 import '../../api/reminder_api.dart';
+import 'reference_pickers.dart';
 
 /// Add or edit a reminder.
 ///
@@ -15,11 +16,14 @@ import '../../api/reminder_api.dart';
 /// `dueDate` are validated server-side; everything else is optional and left
 /// out of the request when blank rather than sent empty.
 ///
-/// **Assignee and lead are deliberately absent.** Both are UUIDs the server
-/// resolves against real rows, and picking either needs a searchable list this
-/// sheet has no room for. A reminder made here belongs to whoever made it,
-/// which is what an agent adding one between calls means anyway. Reassignment
-/// stays on the desktop console.
+/// **Lead and assignee are optional here, unlike on the web console**, which
+/// marks both required. That is the console's rule, not the server's: a create
+/// carrying neither answers 201. Left alone, the reminder belongs to whoever
+/// made it and hangs off no lead — which is exactly what "remind me to call
+/// the airline" is, and what an agent typing between calls usually means.
+///
+/// Both are UUIDs the server resolves against real rows, so each is picked
+/// from a list rather than typed — see `reference_pickers.dart`.
 class ReminderFormSheet extends ConsumerStatefulWidget {
   const ReminderFormSheet({super.key, this.reminder});
 
@@ -59,6 +63,30 @@ class _ReminderFormSheetState extends ConsumerState<ReminderFormSheet> {
   /// "remind me", and far enough out that a half-filled form cannot create
   /// something already overdue.
   late DateTime _due = widget.reminder?.dueDate ?? _tomorrowMorning();
+
+  /// The lead this hangs off, if any.
+  ///
+  /// Id and label are held together and set together — the id is what the
+  /// server resolves, the name is what the agent reads, and letting them
+  /// diverge is how a picker ends up sending the wrong row.
+  late String? _leadId = widget.reminder?.leadPublicId;
+  late String? _leadName = widget.reminder?.leadName;
+
+  /// Whose reminder it is. Null means the server decides — which, on create,
+  /// means whoever is signed in.
+  String? _assigneeId;
+  late String? _assigneeName = widget.reminder?.assignToName;
+
+  /// What the server already had, so an edit sends a reference only when the
+  /// agent actually changed it.
+  ///
+  /// Re-sending the same publicId is not free: `applyReferences` re-resolves
+  /// it through the access guard on every save, and would fail outright if the
+  /// lead had since been deleted — a save rejected over a field nobody touched.
+  late final String? _originalLeadId = widget.reminder?.leadPublicId;
+
+  /// True once the agent picked a lead different from the stored one.
+  bool get _leadChanged => _leadId != _originalLeadId;
 
   bool _busy = false;
   String? _error;
@@ -139,6 +167,11 @@ class _ReminderFormSheetState extends ConsumerState<ReminderFormSheet> {
               description: _description.text,
               type: _type,
               priority: _priority,
+              // Only what the picker actually changed. `_assigneeId` starts
+              // null on an edit even when a name is shown, so an untouched
+              // assignee is left alone rather than re-sent.
+              leadPublicId: _leadChanged ? _leadId : null,
+              assignToPublicId: _assigneeId,
               notes: _notes.text,
             )
           : await api.createReminder(
@@ -147,6 +180,8 @@ class _ReminderFormSheetState extends ConsumerState<ReminderFormSheet> {
               description: _description.text,
               type: _type,
               priority: _priority,
+              leadPublicId: _leadId,
+              assignToPublicId: _assigneeId,
               notes: _notes.text,
             );
       if (mounted) Navigator.of(context).pop(saved.title);
@@ -173,7 +208,7 @@ class _ReminderFormSheetState extends ConsumerState<ReminderFormSheet> {
           // usually wants: moving the date is how an overdue reminder is
           // brought back to life.
           ? 'Changing the date revives an overdue reminder and re-arms it.'
-          : 'It will be assigned to you.',
+          : 'Only a title and a due date are required.',
       error: _error,
       busy: _busy,
       submitLabel: _isEdit ? 'Save changes' : 'Add reminder',
@@ -212,6 +247,61 @@ class _ReminderFormSheetState extends ConsumerState<ReminderFormSheet> {
               ),
             ),
           ],
+        ),
+        const SizedBox(height: AppSpacing.x14),
+        // Both optional, unlike the web console, which makes them mandatory.
+        // The server does not: a create with neither answers 201.
+        Text('Lead', style: AppType.overline),
+        const SizedBox(height: AppSpacing.x8),
+        _PickerTile(
+          icon: Ic.user,
+          label: _leadName ?? 'Not linked to a lead',
+          muted: _leadName == null,
+          // Clearing only ever undoes a pick made in this sheet. A lead the
+          // server already stored cannot be removed at all: `applyReferences`
+          // is a "no-op for null publicIds, so partial updates leave existing
+          // references untouched" — so offering Clear there would be a button
+          // that appears to work and silently does nothing.
+          onClear: _leadChanged && _leadId != null
+              ? () => setState(() {
+                    _leadId = _originalLeadId;
+                    _leadName = widget.reminder?.leadName;
+                  })
+              : null,
+          onTap: _busy
+              ? null
+              : () async {
+                  final picked = await LeadPickerSheet.show(context);
+                  if (picked == null || !mounted) return;
+                  setState(() {
+                    _leadId = picked.id;
+                    _leadName = picked.name;
+                  });
+                },
+        ),
+        const SizedBox(height: AppSpacing.x14),
+        Text('Assign to', style: AppType.overline),
+        const SizedBox(height: AppSpacing.x8),
+        _PickerTile(
+          icon: Ic.users,
+          label: _assigneeName ?? 'Me',
+          muted: _assigneeName == null,
+          onClear: _assigneeId == null
+              ? null
+              : () => setState(() {
+                    _assigneeId = null;
+                    _assigneeName = widget.reminder?.assignToName;
+                  }),
+          onTap: _busy
+              ? null
+              : () async {
+                  final picked = await AssigneePickerSheet.show(context);
+                  if (picked == null || !mounted) return;
+                  setState(() {
+                    _assigneeId = picked.id;
+                    _assigneeName = picked.name;
+                  });
+                },
         ),
         const SizedBox(height: AppSpacing.x14),
         Text('Type', style: AppType.overline),
@@ -274,11 +364,22 @@ class _PickerTile extends StatelessWidget {
     required this.icon,
     required this.label,
     required this.onTap,
+    this.muted = false,
+    this.onClear,
   });
 
   final String icon;
   final String label;
   final VoidCallback? onTap;
+
+  /// Greys the label when it is a stand-in ("Not linked to a lead") rather
+  /// than a real value, so an empty optional field does not read as filled.
+  final bool muted;
+
+  /// Shown only when there is something to clear. Both these references are
+  /// optional, and an agent who linked the wrong lead needs a way back to
+  /// none — not just a way to swap it for another wrong one.
+  final VoidCallback? onClear;
 
   @override
   Widget build(BuildContext context) {
@@ -300,11 +401,22 @@ class _PickerTile extends StatelessWidget {
             Expanded(
               child: Text(
                 label,
-                style: AppType.fieldValue,
+                style: muted
+                    ? AppType.fieldValue.copyWith(color: AppColors.faint)
+                    : AppType.fieldValue,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
             ),
+            if (onClear != null)
+              IconButton(
+                onPressed: onClear,
+                icon: const AppIcon(Ic.close, size: 14, color: AppColors.muted),
+                tooltip: 'Clear',
+                visualDensity: VisualDensity.compact,
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+              ),
           ],
         ),
       ),

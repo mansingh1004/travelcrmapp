@@ -219,6 +219,41 @@ void main() {
       );
     });
 
+    test('carries the lead and assignee when they were picked', () async {
+      // Both are UUIDs the server resolves against real rows. The web console
+      // makes them mandatory; the server does not, so they travel only when
+      // the agent actually chose one.
+      final adapter = _CapturingAdapter(_row);
+      await ReminderApi(_dio(adapter)).createReminder(
+        title: 'Call Rahul',
+        dueDate: DateTime.utc(2026, 9, 10, 9, 30),
+        leadPublicId: 'fe3f9e63-1de4-4792-a234-e5e45e9ffcd1',
+        assignToPublicId: '7c91cc54-ef49-482b-8a9a-8af696a02baf',
+      );
+
+      final body = adapter.captured!.data! as Map<String, dynamic>;
+      expect(body['leadPublicId'], 'fe3f9e63-1de4-4792-a234-e5e45e9ffcd1');
+      expect(body['assignToPublicId'], '7c91cc54-ef49-482b-8a9a-8af696a02baf');
+    });
+
+    test('creates a standalone reminder when neither was picked', () async {
+      // Live: a create with only title + dueDate answers 201. Sending an empty
+      // string instead of omitting the key would be a lookup against '' — a
+      // 404 on a field the request did not need at all.
+      final adapter = _CapturingAdapter(_row);
+      await ReminderApi(_dio(adapter)).createReminder(
+        title: 'Call the airline',
+        dueDate: DateTime.utc(2026, 9, 10, 9, 30),
+        leadPublicId: '',
+        assignToPublicId: null,
+      );
+
+      final body = adapter.captured!.data! as Map<String, dynamic>;
+      expect(body.containsKey('leadPublicId'), isFalse);
+      expect(body.containsKey('assignToPublicId'), isFalse);
+      expect(body.keys.toList(), ['title', 'dueDate']);
+    });
+
     test('updates only the fields that were given', () async {
       // PUT by verb, partial by behaviour: `ReminderMapper.updateEntity`
       // "applies only the non-null fields", so an omitted key leaves that
@@ -236,6 +271,18 @@ void main() {
       expect(adapter.captured!.method, 'PUT');
       expect(adapter.captured!.path, '/api/reminders/9');
       expect(body, {'title': 'Call Rahul again', 'priority': 'High'});
+    });
+
+    test('an update that touches no reference sends neither', () async {
+      // `applyReferences` is documented as a "no-op for null publicIds, so
+      // partial updates leave existing references untouched". Two consequences
+      // the form relies on: an omitted reference is preserved, and a reference
+      // can never be cleared through this endpoint at all.
+      final adapter = _CapturingAdapter(_row);
+      await ReminderApi(_dio(adapter)).updateReminder(9, title: 'Renamed');
+
+      final body = adapter.captured!.data! as Map<String, dynamic>;
+      expect(body, {'title': 'Renamed'});
     });
 
     test('sends a moved due date as a UTC instant', () async {

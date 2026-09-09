@@ -232,6 +232,12 @@ class ReminderApi {
   /// Only `title` and `dueDate` are validated (`@NotBlank` / `@NotNull`), and
   /// the server sets `status` to `Active` itself — sending one would be a guess
   /// at a field it owns.
+  ///
+  /// `leadPublicId` and `assignToPublicId` are optional here even though the
+  /// web console makes both mandatory. That is the console's own rule, not the
+  /// server's: a create with neither answers 201. Left unset, the reminder
+  /// belongs to whoever made it and hangs off no lead — which is what "remind
+  /// me to call the airline" actually is.
   Future<Reminder> createReminder({
     required String title,
     required DateTime dueDate,
@@ -239,6 +245,7 @@ class ReminderApi {
     String? type,
     String? priority,
     String? leadPublicId,
+    String? assignToPublicId,
     String? notes,
   }) =>
       _write(
@@ -251,6 +258,7 @@ class ReminderApi {
           'type': ?type,
           'priority': ?priority,
           'leadPublicId': ?_trimToNull(leadPublicId),
+          'assignToPublicId': ?_trimToNull(assignToPublicId),
           'notes': ?_trimToNull(notes),
         },
       );
@@ -273,6 +281,8 @@ class ReminderApi {
     String? description,
     String? type,
     String? priority,
+    String? leadPublicId,
+    String? assignToPublicId,
     String? notes,
   }) =>
       _write(
@@ -284,6 +294,12 @@ class ReminderApi {
           'description': ?_trimToNull(description),
           'type': ?type,
           'priority': ?priority,
+          // Sent only when the picker changed them. `applyReferences` re-resolves
+          // a reference whenever a publicId arrives, so echoing the current one
+          // back on every save would be a pointless lookup per keystroke-sized
+          // edit.
+          'leadPublicId': ?_trimToNull(leadPublicId),
+          'assignToPublicId': ?_trimToNull(assignToPublicId),
           'notes': ?_trimToNull(notes),
         },
       );
