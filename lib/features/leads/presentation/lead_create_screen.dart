@@ -505,8 +505,11 @@ class _LeadCreateScreenState extends ConsumerState<LeadCreateScreen> {
                 color: AppColors.canvas,
                 borderRadius: BorderRadius.circular(AppRadii.chip),
               ),
+              // "Draft" is only true of a lead that does not exist yet. On an
+              // edit the lead is on file, so the chip carries its code —
+              // which is also what tells the agent they are on the right one.
               child: Text(
-                'Draft',
+                _isEdit ? (widget.lead?.leadCode ?? 'Saved') : 'Draft',
                 style: AppType.monoSm.copyWith(color: AppColors.faint),
               ),
             ),
