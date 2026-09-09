@@ -124,6 +124,24 @@ void main() {
       parsesOne('lead_detail', (j) => LeadMapper.toEntity(LeadDto.fromJson(j)));
     });
 
+    test('lead detail keeps the fields only the edit form needs', () {
+      // `PUT /api/leads/{id}` takes the create DTO and assigns every field
+      // unconditionally, so an edit posts the whole lead back. Anything the
+      // entity drops, the form re-sends as its own default — turning a save
+      // into a silent wipe. These seven were on the wire and unmodelled while
+      // the app was read-only here; this fixture is a real lead that has them.
+      final lead = LeadMapper.toEntity(
+        LeadDto.fromJson(data('lead_detail')! as Map<String, dynamic>),
+      );
+
+      expect(lead.male, 3);
+      expect(lead.female, 2);
+      expect(lead.packageType, 'Family');
+      expect(lead.departureMode, 'Car / Road');
+      expect(lead.specialAssistanceRequired, isFalse);
+      expect(lead.assistancePassengerCount, 0);
+    });
+
     test('customer detail', () {
       parsesOne('customer_detail', (j) => CustomerMapper.toEntity(CustomerDto.fromJson(j)));
     });

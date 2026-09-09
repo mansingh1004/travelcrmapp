@@ -35,6 +35,13 @@ class Lead {
     this.children,
     this.infants,
     this.extraBeds,
+    this.male,
+    this.female,
+    this.packageType,
+    this.departureMode,
+    this.specialAssistanceRequired,
+    this.assistancePassengerCount,
+    this.specialAssistanceNotes,
     this.services = const [],
     this.notes,
     this.itinerary = const [],
@@ -89,6 +96,21 @@ class Lead {
   final int? children;
   final int? infants;
   final int? extraBeds;
+
+  // ── Carried for the edit form, not for display ───────────────────────────
+  //
+  // `PUT /api/leads/{id}` takes the create DTO and assigns every field
+  // unconditionally, so an edit posts the whole lead back. Anything the form
+  // cannot read back it would send as its own default — turning a save into a
+  // silent wipe of the seven fields below. None of them appear on the detail
+  // screen; they exist so a round trip returns what it was given.
+  final int? male;
+  final int? female;
+  final String? packageType;
+  final String? departureMode;
+  final bool? specialAssistanceRequired;
+  final int? assistancePassengerCount;
+  final String? specialAssistanceNotes;
 
   final List<String> services;
   final String? notes;

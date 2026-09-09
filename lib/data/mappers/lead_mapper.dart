@@ -47,6 +47,15 @@ abstract final class LeadMapper {
         children: dto.children,
         infants: dto.infants,
         extraBeds: dto.extraBeds,
+        // Carried so an edit can post the whole lead back unchanged — see the
+        // note on these fields in `Lead`.
+        male: dto.male,
+        female: dto.female,
+        packageType: _blankToNull(dto.packageType),
+        departureMode: _blankToNull(dto.departureMode),
+        specialAssistanceRequired: dto.specialAssistanceRequired,
+        assistancePassengerCount: dto.assistancePassengerCount,
+        specialAssistanceNotes: _blankToNull(dto.specialAssistanceNotes),
         services: dto.services.where((s) => s.trim().isNotEmpty).toList(growable: false),
         notes: _blankToNull(dto.notes),
         itinerary: dto.itinerary

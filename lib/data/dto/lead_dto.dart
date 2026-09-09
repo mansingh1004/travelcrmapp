@@ -48,6 +48,16 @@ abstract class LeadDto with _$LeadDto {
     int? children,
     int? infants,
     int? extraBeds,
+    // Read for one reason: `PUT /api/leads/{id}` takes `CreateLeadRequestDto`
+    // and assigns every field unconditionally, so a field the edit form cannot
+    // read back is a field the next save silently nulls. These six were on the
+    // wire all along and simply unmodelled while the app was read-only here.
+    int? male,
+    int? female,
+    String? packageType,
+    bool? specialAssistanceRequired,
+    int? assistancePassengerCount,
+    String? specialAssistanceNotes,
     @Default(<String>[]) List<String> services,
     String? notes,
     @Default(<LeadItineraryDto>[]) List<LeadItineraryDto> itinerary,
