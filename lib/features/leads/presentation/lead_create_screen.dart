@@ -16,21 +16,51 @@ import '../../../router/routes.dart';
 import '../../../widgets/app_card.dart';
 import '../../../widgets/app_toast.dart';
 import '../providers/leads_controller.dart';
+import '../providers/lead_detail_provider.dart';
 import 'widgets/auth_style_field.dart';
 import '../../../router/safe_pop.dart';
 
 /// How the party is getting to the destination — `DepartureMode` on the wire.
 enum _TravelMode {
-  flight('FLIGHT', 'Flight'),
-  train('TRAIN', 'Train'),
-  car('CAR', 'Car'),
-  bus('BUS', 'Bus'),
-  other('OTHER', 'Other');
+  flight('FLIGHT', 'Flight', 'Flight / Airport'),
+  train('TRAIN', 'Train', 'Train / Rail'),
+  car('CAR', 'Car', 'Car / Road'),
+  bus('BUS', 'Bus', 'Bus'),
+  other('OTHER', 'Other', 'Other');
 
-  const _TravelMode(this.wire, this.label);
+  const _TravelMode(this.wire, this.label, this.serverLabel);
 
+  /// What this app sends. `DepartureMode.fromValue` accepts the enum name.
   final String wire;
+
+  /// What the chip reads on screen — kept short for a phone.
   final String label;
+
+  /// What the server sends back: `DepartureMode`'s `@JsonValue` display name.
+  /// Held separately so the chip can stay short while [parse] still matches.
+  final String serverLabel;
+
+  /// Read a mode back off the wire, accepting either spelling.
+  ///
+  /// The app sends `CAR`; the server answers `"Car / Road"` — its `@JsonValue`
+  /// is the display name, while `fromValue` accepts the enum name too, so both
+  /// directions work but they are not the same string. Matching only on [wire]
+  /// would leave the dropdown unset on an edit, and since the update is a full
+  /// replace, saving would then null the column. The backend's own note warns
+  /// about exactly this: "the lead saves, then reopens with the transport
+  /// section unset and every field under it orphaned."
+  static _TravelMode? parse(String? value) {
+    final v = value?.trim().toLowerCase();
+    if (v == null || v.isEmpty) return null;
+    for (final mode in values) {
+      if (mode.wire.toLowerCase() == v ||
+          mode.label.toLowerCase() == v ||
+          mode.serverLabel.toLowerCase() == v) {
+        return mode;
+      }
+    }
+    return null;
+  }
 }
 
 /// Create-lead wizard — the spec's five steps.
@@ -56,7 +86,17 @@ enum _TravelMode {
 /// lead (`POST /api/tasks`), because a lead's own `followUpDate` is a date with
 /// no time on it.
 class LeadCreateScreen extends ConsumerStatefulWidget {
-  const LeadCreateScreen({super.key});
+  const LeadCreateScreen({super.key, this.lead});
+
+  /// The lead being edited, or null when creating one.
+  ///
+  /// Edit reuses this screen rather than getting a form of its own, because
+  /// `PUT /api/leads/{publicId}` takes the **create** DTO and assigns every
+  /// field unconditionally — the server expects the whole lead posted back. A
+  /// smaller edit form would send its own defaults for whatever it left out
+  /// and quietly wipe those columns. Same steps, same fields, same order; only
+  /// the title, the submit label and the call at the end differ.
+  final Lead? lead;
 
   @override
   ConsumerState<LeadCreateScreen> createState() => _LeadCreateScreenState();
@@ -129,6 +169,71 @@ class _LeadCreateScreenState extends ConsumerState<LeadCreateScreen> {
 
   int _index = 0;
   bool _busy = false;
+
+  bool get _isEdit => widget.lead != null;
+
+  @override
+  void initState() {
+    super.initState();
+    final lead = widget.lead;
+    if (lead != null) _fill(lead);
+  }
+
+  /// Load an existing lead into the form.
+  ///
+  /// Every field the submit sends is filled, including the seven the detail
+  /// screen never shows — `male`, `female`, `packageType`, `departureMode`,
+  /// assistance and its notes. The update posts the whole lead back, so a
+  /// field left at its form default here is a field the save overwrites.
+  void _fill(Lead lead) {
+    // One `customerName` column, two fields: everything after the first space
+    // is the surname, so "vipin shahu" round-trips and a single-word name
+    // simply leaves the last-name field empty.
+    final parts = lead.customerName.trim().split(RegExp(r'\s+'));
+    _firstName.text = parts.isEmpty ? '' : parts.first;
+    _lastName.text = parts.length > 1 ? parts.skip(1).join(' ') : '';
+
+    _phone.text = lead.phone;
+    _whatsapp.text = lead.whatsapp ?? '';
+    _email.text = lead.email ?? '';
+    _customerCity.text = lead.city ?? '';
+    _customerState.text = lead.state ?? '';
+    _customerCountry.text = lead.country ?? 'India';
+    _birthDate = lead.birthDate;
+
+    _adults = lead.adults ?? 1;
+    _male = lead.male ?? 0;
+    _female = lead.female ?? 0;
+    _children = lead.children ?? 0;
+    _infants = lead.infants ?? 0;
+    _rooms = lead.rooms ?? 1;
+    _extraBeds = lead.extraBeds ?? 0;
+    _assistance = lead.specialAssistanceRequired ?? false;
+    _assistancePax = lead.assistancePassengerCount ?? 0;
+    _assistanceNotes.text = lead.specialAssistanceNotes ?? '';
+
+    _departCity.text = lead.departCity ?? '';
+    _travelDate = lead.travelDate;
+    _returnDate = lead.returnDate;
+    _budget.text = lead.budget == null ? '' : lead.budget!.toStringAsFixed(0);
+    _packageType = lead.packageType ?? _packageType;
+    _travelMode = _TravelMode.parse(lead.departureMode) ?? _travelMode;
+
+    // The form models one stop; a lead with several keeps the first, which is
+    // the destination every other screen shows for it.
+    final stop = lead.itinerary.isEmpty ? null : lead.itinerary.first;
+    if (stop != null) {
+      _destination.text = stop.destination;
+      _city.text = stop.city;
+      _nights.text = stop.nights > 0 ? '${stop.nights}' : '';
+    }
+
+    _source = lead.source;
+    _type = lead.type ?? _type;
+    _stage = lead.stage ?? _stage;
+    _assignedUserId = lead.assignedTo?.id;
+    _notes.text = lead.notes ?? '';
+  }
 
   @override
   void dispose() {
@@ -238,8 +343,10 @@ class _LeadCreateScreenState extends ConsumerState<LeadCreateScreen> {
       final nights = int.tryParse(_nights.text.trim()) ?? 0;
       final repo = ref.read(leadRepositoryProvider);
 
-      final lead = await repo.createLead(
-        LeadMapper.createBody(
+      // The same body either way — `PUT /api/leads/{publicId}` takes the
+      // create DTO and assigns every field, so an edit is a create that
+      // happens to know its own id.
+      final body = LeadMapper.createBody(
           customerName: _customerName,
           phone: _phone.text,
           whatsapp: _whatsapp.text,
@@ -281,8 +388,12 @@ class _LeadCreateScreenState extends ConsumerState<LeadCreateScreen> {
                     nights: nights,
                   ),
                 ],
-        ),
       );
+
+      final existing = widget.lead;
+      final lead = existing == null
+          ? await repo.createLead(body)
+          : await repo.updateLead(existing.id, body);
 
       // Everything below is best-effort. The lead exists from here on, so a
       // failure must read as "the extra did not save", never as "nothing saved".
@@ -291,7 +402,17 @@ class _LeadCreateScreenState extends ConsumerState<LeadCreateScreen> {
       if (!mounted) return;
       ref.read(leadsControllerProvider.notifier).upsert(lead);
       ref.invalidate(leadStageCountsProvider);
-      AppToast.success(context, 'Lead created', lead.customerName);
+      // The detail screen is what an edit came from, and it holds its own copy.
+      if (_isEdit) {
+        ref
+          ..invalidate(leadDetailProvider(lead.id))
+          ..invalidate(leadLogsProvider(lead.id));
+      }
+      AppToast.success(
+        context,
+        _isEdit ? 'Lead updated' : 'Lead created',
+        lead.customerName,
+      );
       context.backOrHome();
       // The quotation builder is one of the shell's unbacked screens; it names
       // the endpoint it is waiting on rather than pretending to be ready.
@@ -365,7 +486,7 @@ class _LeadCreateScreenState extends ConsumerState<LeadCreateScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text('New lead', style: AppType.h2),
+            Text(_isEdit ? 'Edit lead' : 'New lead', style: AppType.h2),
             Text(
               'Step ${_index + 1} of ${_steps.length} · ${_steps[_index]}',
               style: AppType.caption.copyWith(fontSize: 11.5),
@@ -421,6 +542,7 @@ class _LeadCreateScreenState extends ConsumerState<LeadCreateScreen> {
             _Footer(
               busy: _busy,
               isLast: _index == _steps.length - 1,
+              saveLabel: _isEdit ? 'Save changes' : 'Save lead',
               showBack: _index > 0,
               onBack: _back,
               onNext: _busy ? null : _next,
@@ -1072,6 +1194,7 @@ class _Footer extends StatelessWidget {
   const _Footer({
     required this.busy,
     required this.isLast,
+    required this.saveLabel,
     required this.showBack,
     required this.onBack,
     required this.onNext,
@@ -1081,6 +1204,10 @@ class _Footer extends StatelessWidget {
 
   final bool busy;
   final bool isLast;
+
+  /// 'Save lead' when creating, 'Save changes' when editing — the only word
+  /// on this screen that tells you which one you are in besides the title.
+  final String saveLabel;
   final bool showBack;
   final VoidCallback onBack;
   final VoidCallback? onNext;
@@ -1132,7 +1259,7 @@ class _Footer extends StatelessWidget {
                                 color: AppColors.onPrimary,
                               ),
                             )
-                          : Text(isLast ? 'Save lead' : 'Continue'),
+                          : Text(isLast ? saveLabel : 'Continue'),
                     ),
                   ),
                 ],
