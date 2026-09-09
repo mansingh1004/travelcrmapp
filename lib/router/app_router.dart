@@ -97,6 +97,13 @@ final routerProvider = Provider<GoRouter>((ref) {
         ),
       ),
       GoRoute(
+        path: Routes.leadEdit,
+        parentNavigatorKey: _rootKey,
+        builder: (_, state) => LeadEditScreen(
+          publicId: state.pathParameters['id'] ?? '',
+        ),
+      ),
+      GoRoute(
         path: Routes.customers,
         parentNavigatorKey: _rootKey,
         builder: (_, _) => const CustomersScreen(),

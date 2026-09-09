@@ -101,6 +101,54 @@ void main() {
     expect(find.text('Save lead'), findsNothing);
   });
 
+  testWidgets('the lead menu offers edit and delete', (tester) async {
+    // Same place bookings and vendors keep theirs — the AppBar's dots menu.
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          leadDetailProvider(lead.id).overrideWith((ref) async => lead),
+        ],
+        child: MaterialApp(
+          theme: AppTheme.light,
+          home: LeadDetailScreen(publicId: lead.id),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Lead actions'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Edit'), findsOneWidget);
+    expect(find.text('Delete'), findsOneWidget);
+  });
+
+  testWidgets('deleting asks first, and naming the lead', (tester) async {
+    // A lead carries its follow-up history with it, so this is not a tap to
+    // take lightly — and Lost is usually what the agent actually means.
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          leadDetailProvider(lead.id).overrideWith((ref) async => lead),
+        ],
+        child: MaterialApp(
+          theme: AppTheme.light,
+          home: LeadDetailScreen(publicId: lead.id),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Lead actions'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Delete'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Delete ${lead.customerName}?'), findsOneWidget);
+    expect(find.text('Keep it'), findsOneWidget);
+    expect(find.textContaining('marked Lost'), findsOneWidget);
+  });
+
   test('the departure mode survives the round trip', () {
     // The app sends `CAR`, the server answers `"Car / Road"`. Reading it back
     // by the sent spelling alone would leave the control unset — and because

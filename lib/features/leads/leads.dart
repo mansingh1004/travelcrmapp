@@ -7,6 +7,7 @@ library;
 
 export 'presentation/lead_create_screen.dart';
 export 'presentation/lead_detail_screen.dart';
+export 'presentation/lead_edit_screen.dart';
 export 'presentation/leads_screen.dart';
 export 'providers/lead_detail_provider.dart';
 export 'providers/leads_controller.dart';

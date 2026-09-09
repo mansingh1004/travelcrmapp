@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/status_colors.dart';
 import '../../../core/errors/failure.dart';
@@ -18,6 +19,7 @@ import '../../../widgets/state_views.dart';
 import '../../../widgets/status_chip.dart';
 import '../providers/lead_detail_provider.dart';
 import 'widgets/log_followup_sheet.dart';
+import '../../../router/routes.dart';
 import '../../../router/safe_pop.dart';
 
 /// Lead detail — header, actions, customer, travel requirement and the
@@ -46,6 +48,11 @@ class LeadDetailScreen extends ConsumerWidget {
           tooltip: 'Back',
         ),
         title: Text('Lead', style: AppType.h2),
+        actions: [
+          // Only once the lead has loaded: both actions need it — edit to fill
+          // the form, delete to name what is being deleted.
+          if (async.value case final lead?) _LeadMenu(lead: lead),
+        ],
         shape: const Border(bottom: BorderSide(color: AppColors.line)),
       ),
       body: switch (async) {
@@ -583,5 +590,97 @@ Future<void> _logFollowUp(BuildContext context, WidgetRef ref, String leadId) as
   final logged = await LogFollowUpSheet.show(context, ref, leadId: leadId);
   if (logged != null && context.mounted) {
     AppToast.show(context, title: 'Follow-up logged', message: logged);
+  }
+}
+
+enum _LeadAction { edit, delete }
+
+/// Edit and delete, in the same place bookings and vendors keep theirs.
+///
+/// **Delete is unconditional here, unlike on a booking.** `LeadServiceImpl`
+/// puts no state behind it — no "cannot delete a converted lead" — and it is a
+/// soft delete, so the row survives in Trash. A booking has to guard the
+/// equivalent because the server refuses a CONFIRMED one outright.
+class _LeadMenu extends ConsumerWidget {
+  const _LeadMenu({required this.lead});
+
+  final Lead lead;
+
+  Future<void> _delete(BuildContext context, WidgetRef ref) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: AppColors.surface,
+        title: Text(
+          'Delete ${lead.customerName.isEmpty ? 'this lead' : lead.customerName}?',
+          style: AppType.h3,
+        ),
+        content: Text(
+          'It moves to Trash along with its follow-up history. A lead that '
+          'went cold is better marked Lost — that keeps it in the pipeline '
+          'figures.',
+          style: AppType.bodySm,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Keep it'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            style: TextButton.styleFrom(foregroundColor: AppColors.danger),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    try {
+      await ref.read(leadActionsProvider).delete(lead.id);
+      if (context.mounted) {
+        AppToast.success(context, 'Lead deleted', lead.customerName);
+        // Back to the list: the screen behind this one is now showing a lead
+        // that no longer exists.
+        context.backOrHome();
+      }
+    } on Failure catch (f) {
+      if (context.mounted) AppToast.error(context, 'Could not delete', f.message);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return PopupMenuButton<_LeadAction>(
+      tooltip: 'Lead actions',
+      color: AppColors.surface,
+      icon: const AppIcon(Ic.dots, size: 18, color: AppColors.body),
+      onSelected: (action) => switch (action) {
+        _LeadAction.edit => context.push(Routes.leadEditFor(lead.id)),
+        _LeadAction.delete => _delete(context, ref),
+      },
+      itemBuilder: (_) => [
+        PopupMenuItem(
+          value: _LeadAction.edit,
+          child: Row(
+            children: [
+              const AppIcon(Ic.edit, size: 16, color: AppColors.muted),
+              const SizedBox(width: AppSpacing.x10),
+              Text('Edit', style: AppType.body),
+            ],
+          ),
+        ),
+        PopupMenuItem(
+          value: _LeadAction.delete,
+          child: Row(
+            children: [
+              const AppIcon(Ic.trash, size: 16, color: AppColors.danger),
+              const SizedBox(width: AppSpacing.x10),
+              Text('Delete', style: AppType.body.copyWith(color: AppColors.danger)),
+            ],
+          ),
+        ),
+      ],
+    );
   }
 }

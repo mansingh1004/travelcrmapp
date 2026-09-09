@@ -19,6 +19,7 @@ abstract final class Routes {
   // ── Sales ──────────────────────────────────────────────────────────────
   static const leadCreate = '/leads/new';
   static const leadDetail = '/leads/:id';
+  static const leadEdit = '/leads/:id/edit';
   static const customers = '/customers';
   static const customerDetail = '/customers/:id';
 
@@ -56,6 +57,8 @@ abstract final class Routes {
   /// Detail routes are addressed by publicId — the only identifier the API
   /// exposes. Internal ids never cross the wire.
   static String leadDetailFor(String publicId) => '/leads/$publicId';
+
+  static String leadEditFor(String publicId) => '/leads/$publicId/edit';
 
   static String customerDetailFor(String publicId) => '/customers/$publicId';
 
